@@ -1,0 +1,5454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081923">
+  <title>SpringGrid · Energy Control Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    
+    :root {
+      color-scheme: dark;
+      --bg: #101318;
+      --panel: #181c23;
+      --panel2: #1d222b;
+      --line: #2a303a;
+      --muted: #8c96a6;
+      --text: #f2f4f7;
+      --mint: #bafa65;
+      --teal: #67e1c0;
+      --purple: #c4a3ff;
+      --orange: #ffb86a;
+      --red: #ff777d;
+      --blue: #8aaeff;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --display: 'Manrope', sans-serif
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: radial-gradient(ellipse at 70% -20%, #233328 0, transparent 38%), var(--bg);
+      color: var(--text);
+      font: 14px var(--sans);
+      letter-spacing: -.01em
+    }
+
+    button, input {
+      font: inherit
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr)
+    }
+
+    .sidebar {
+      border-right: 1px solid #252a32;
+      background: #13161c;
+      padding: 24px 15px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 4px 9px 27px
+    }
+
+    .brand-mark {
+      width: 35px;
+      height: 35px;
+      border-radius: 12px;
+      background: var(--mint);
+      display: grid;
+      place-items: center;
+      color: #172014;
+      font-size: 20px;
+      box-shadow: 0 5px 22px #bafa6530
+    }
+
+    .brand-name {
+      font: 800 16px var(--display);
+      letter-spacing: -.06em
+    }
+
+    .brand-sub {
+      font: 9px var(--mono);
+      color: var(--muted);
+      letter-spacing: .09em;
+      margin-top: 2px
+    }
+
+    .nav-label {
+      font: 10px var(--mono);
+      color: #687180;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      padding: 10px 10px 8px
+    }
+
+    .nav {
+      display: grid;
+      gap: 5px
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: #9ea6b3;
+      padding: 11px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      transition: .2s
+    }
+
+    .nav a:hover, .nav a.active {
+      background: #22282d;
+      color: #eff6df
+    }
+
+    .nav a.active {
+      box-shadow: inset 2px 0 var(--mint)
+    }
+
+    .nav-ico {
+      width: 18px;
+      text-align: center;
+      font-size: 15px
+    }
+
+    .nav-count {
+      margin-left: auto;
+      font: 10px var(--mono);
+      color: #101318;
+      background: var(--mint);
+      border-radius: 99px;
+      padding: 2px 6px
+    }
+
+    .side-spacer {
+      flex: 1
+    }
+
+    .weather-card {
+      border: 1px solid #303640;
+      background: linear-gradient(145deg, #202a28, #1c2028);
+      padding: 14px;
+      border-radius: 13px;
+      margin: 12px 1px 14px
+    }
+
+    .weather-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #9ca9a8;
+      font-size: 11px
+    }
+
+    .weather-value {
+      font: 700 24px var(--display);
+      margin: 9px 0 3px
+    }
+
+    .weather-foot {
+      font-size: 10px;
+      color: #84918d
+    }
+
+    .side-bottom {
+      padding: 11px 10px 2px;
+      color: #71808a;
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #262b33
+    }
+
+    .main {
+      min-width: 0;
+      padding: 27px clamp(18px, 3vw, 42px) 38px;
+      max-width: 1700px;
+      width: 100%;
+      margin: 0 auto
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 29px
+    }
+
+    .eyebrow {
+      font: 10px var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--mint);
+      margin-bottom: 7px
+    }
+
+    .page-title {
+      font: 700 clamp(22px, 2.5vw, 30px) var(--display);
+      letter-spacing: -.055em;
+      margin: 0
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .date-chip, .connection-chip {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #1a1e25;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #c7cdd5;
+      font-size: 11px
+    }
+
+    .connection-chip {
+      border-color: #384332;
+      background: #20271f;
+      color: #d5efb6
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--mint);
+      border-radius: 50%;
+      box-shadow: 0 0 10px #bafa65a0
+    }
+
+    .icon-button {
+      height: 36px;
+      width: 37px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #1a1e25;
+      color: #b8c0ca;
+      font-size: 15px
+    }
+
+    .welcome {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 19px
+    }
+
+    .welcome h2 {
+      font: 600 17px var(--display);
+      letter-spacing: -.04em;
+      margin: 0
+    }
+
+    .welcome p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    .button-primary {
+      border: 0;
+      border-radius: 9px;
+      background: var(--mint);
+      color: #172014;
+      font-weight: 700;
+      padding: 11px 15px;
+      box-shadow: 0 5px 20px #bafa6520;
+      transition: transform .18s, filter .18s
+    }
+
+    .button-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px)
+    }
+
+    .button-primary:disabled {
+      opacity: .65;
+      cursor: wait
+    }
+
+    .button-ico {
+      font-size: 14px;
+      margin-right: 7px
+    }
+
+    .offline-note {
+      display: none;
+      margin: 0 0 18px;
+      border: 1px solid #554c31;
+      background: #29251b;
+      color: #e6cf93;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 11px;
+      line-height: 1.5
+    }
+
+    .offline-note code {
+      font: 11px var(--mono);
+      color: #f4e4b9
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px
+    }
+
+    .card {
+      background: linear-gradient(145deg, #1b2027, #171b22);
+      border: 1px solid #292f38;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px #00000014
+    }
+
+    .kpi {
+      padding: 16px 17px 15px;
+      min-height: 129px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .kpi:after {
+      content: "";
+      position: absolute;
+      right: -28px;
+      top: -45px;
+      width: 100px;
+      height: 100px;
+      background: var(--accent);
+      opacity: .08;
+      filter: blur(22px);
+      border-radius: 50%
+    }
+
+    .kpi-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #a9b1bd;
+      font-size: 11px
+    }
+
+    .kpi-icon {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent);
+      font-size: 14px
+    }
+
+    .kpi-value {
+      font: 700 27px var(--display);
+      letter-spacing: -.06em;
+      margin: 11px 0 5px;
+      line-height: 1
+    }
+
+    .kpi-unit {
+      font-size: 12px;
+      color: #a9b1bd;
+      font-weight: 500;
+      letter-spacing: 0
+    }
+
+    .kpi-meta {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .kpi-meta strong {
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .layout-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(275px, .88fr);
+      gap: 15px;
+      margin-bottom: 15px
+    }
+
+    .chart-card {
+      padding: 18px 19px 13px;
+      min-width: 0
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px
+    }
+
+    .card-title {
+      font: 650 14px var(--display);
+      letter-spacing: -.035em;
+      margin: 0
+    }
+
+    .card-subtitle {
+      font-size: 10px;
+      color: var(--muted);
+      margin: 5px 0 0
+    }
+
+    .legend {
+      display: flex;
+      gap: 13px;
+      align-items: center;
+      margin-top: 15px;
+      color: #a9b1bb;
+      font-size: 10px
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .legend-mark {
+      width: 13px;
+      height: 2px;
+      border-radius: 3px;
+      background: var(--mint)
+    }
+
+    .legend-mark.threshold {
+      background: repeating-linear-gradient(90deg, #ffb86a 0 3px, transparent 3px 5px)
+    }
+
+    .range-select {
+      display: flex;
+      gap: 3px;
+      padding: 3px;
+      border: 1px solid #303640;
+      background: #14181e;
+      border-radius: 8px
+    }
+
+    .range-select button {
+      border: 0;
+      background: transparent;
+      color: #8f98a5;
+      font: 10px var(--mono);
+      padding: 6px 8px;
+      border-radius: 5px
+    }
+
+    .range-select button.selected {
+      background: #2b3330;
+      color: var(--mint)
+    }
+
+    .chart-box {
+      height: 254px;
+      position: relative;
+      margin: 9px -3px 0
+    }
+
+    .chart-foot {
+      border-top: 1px solid #2a3038;
+      padding-top: 12px;
+      margin-top: 1px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #9099a6;
+      font-size: 10px
+    }
+
+    .chart-foot strong {
+      color: #d8dde3;
+      font-weight: 600
+    }
+
+    .dispatch-card {
+      padding: 18px
+    }
+
+    .dispatch-current {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0 15px;
+      padding: 12px;
+      background: #202722;
+      border: 1px solid #354333;
+      border-radius: 11px
+    }
+
+    .dispatch-state {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .state-orb {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: #374333;
+      color: var(--mint);
+      font-size: 14px
+    }
+
+    .state-name {
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    .state-caption {
+      font-size: 9px;
+      color: #8c9a87;
+      margin-top: 3px
+    }
+
+    .now-pill {
+      font: 9px var(--mono);
+      color: var(--mint);
+      padding: 5px 7px;
+      background: #253222;
+      border-radius: 6px
+    }
+
+    .dispatch-list {
+      display: grid;
+      gap: 0
+    }
+
+    .dispatch-row {
+      display: grid;
+      grid-template-columns: 43px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 1px;
+      border-bottom: 1px solid #2a3038
+    }
+
+    .dispatch-row:last-child {
+      border: 0
+    }
+
+    .dispatch-time {
+      font: 10px var(--mono);
+      color: #9aa3af
+    }
+
+    .dispatch-meter {
+      height: 5px;
+      background: #303640;
+      border-radius: 9px;
+      overflow: hidden;
+      margin-top: 5px
+    }
+
+    .dispatch-meter span {
+      display: block;
+      height: 100%;
+      border-radius: 9px;
+      background: var(--mint)
+    }
+
+    .dispatch-demand {
+      font: 10px var(--mono);
+      color: #d3d9e0;
+      text-align: right
+    }
+
+    .mode-tag {
+      font-size: 8px;
+      color: #8ce2cb;
+      padding: 4px 6px;
+      background: #20332f;
+      border-radius: 5px;
+      white-space: nowrap
+    }
+
+    .mode-tag.grid {
+      color: #a9c0ff;
+      background: #252d40
+    }
+
+    .mode-tag.risk {
+      color: #ff8c92;
+      background: #3a242a
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 15px
+    }
+
+    .lower-card {
+      padding: 17px;
+      min-height: 179px
+    }
+
+    .mix-wrap {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      margin-top: 16px
+    }
+
+    .donut {
+      width: 94px;
+      height: 94px;
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      flex: none;
+      background: conic-gradient(var(--mint) 0 63%, #37404a 63% 100%)
+    }
+
+    .donut:after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: #191e25
+    }
+
+    .donut-center {
+      position: relative;
+      z-index: 1;
+      text-align: center
+    }
+
+    .donut-value {
+      font: 700 20px var(--display);
+      letter-spacing: -.05em
+    }
+
+    .donut-label {
+      font: 8px var(--mono);
+      color: #9ba4b0;
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
+
+    .mix-legend {
+      display: grid;
+      gap: 10px;
+      min-width: 0
+    }
+
+    .mix-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 10px;
+      color: #aeb6c1
+    }
+
+    .mix-line span:first-child {
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .mix-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--mint)
+    }
+
+    .mix-dot.utility {
+      background: #737e8d
+    }
+
+    .mix-line b {
+      font: 10px var(--mono);
+      color: #e3e7eb
+    }
+
+    .alert-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px
+    }
+
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      font-size: 10px;
+      color: #abb3be;
+      line-height: 1.4
+    }
+
+    .alert-bullet {
+      width: 19px;
+      height: 19px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      background: #292f32;
+      color: var(--teal);
+      font-size: 10px
+    }
+
+    .alert-bullet.warn {
+      background: #3b2d22;
+      color: var(--orange)
+    }
+
+    .alert-item strong {
+      color: #e4e8ec;
+      font-weight: 600
+    }
+
+    .upload-zone {
+      margin-top: 14px;
+      border: 1px dashed #3b424c;
+      background: #171b21;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: .2s
+    }
+
+    .upload-zone.dragover {
+      border-color: var(--mint);
+      background: #1e2821
+    }
+
+    .upload-icon {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      background: #283127;
+      color: var(--mint);
+      border-radius: 8px;
+      font-size: 14px
+    }
+
+    .upload-text {
+      flex: 1;
+      min-width: 0
+    }
+
+    .upload-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #e1e6e9
+    }
+
+    .upload-hint {
+      font-size: 9px;
+      color: #8d97a3;
+      margin-top: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .upload-button {
+      font-size: 9px;
+      color: var(--mint);
+      font-weight: 700;
+      background: #283127;
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 8px
+    }
+
+    .hidden-input {
+      display: none
+    }
+
+    .bottom-note {
+      font: 9px var(--mono);
+      color: #66717f;
+      text-align: right;
+      margin-top: 15px
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      background: #252b33;
+      border: 1px solid #414953;
+      color: #f1f3f5;
+      border-radius: 10px;
+      padding: 12px 15px;
+      box-shadow: 0 10px 30px #0008;
+      font-size: 11px;
+      max-width: 320px;
+      z-index: 20;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: .25s
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: none
+    }
+
+    .empty-state {
+      color: #8993a0;
+      text-align: center;
+      font-size: 11px;
+      padding: 22px 8px
+    }
+
+    @media(max-width:1120px) {
+      .layout-main {
+        grid-template-columns: minmax(0, 1.4fr) minmax(250px, .9fr)
+      }
+      .lower-grid {
+        grid-template-columns: 1fr 1fr
+      }
+      .lower-card:last-child {
+        grid-column: span 2
+      }
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+    }
+
+    @media(max-width:760px) {
+      .app {
+        grid-template-columns: 1fr
+      }
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 10px 14px;
+        border-right: 0;
+        border-bottom: 1px solid #292f38;
+        display: block
+      }
+      .brand {
+        padding: 3px 2px 9px
+      }
+      .nav-label, .weather-card, .side-bottom {
+        display: none
+      }
+      .nav {
+        display: flex;
+        gap: 4px;
+        overflow: auto
+      }
+      .nav a {
+        font-size: 10px;
+        padding: 9px 10px;
+        white-space: nowrap
+      }
+      .nav-ico {
+        display: none
+      }
+      .nav-count {
+        display: none
+      }
+      .main {
+        padding: 21px 15px 28px
+      }
+      .topbar {
+        margin-bottom: 22px;
+        align-items: flex-start
+      }
+      .top-actions {
+        gap: 6px
+      }
+      .connection-chip {
+        font-size: 0;
+        width: 35px;
+        justify-content: center;
+        padding: 0
+      }
+      .connection-chip .status-dot {
+        margin: 0
+      }
+      .date-chip {
+        font-size: 9px;
+        padding: 0 8px
+      }
+      .icon-button {
+        width: 34px
+      }
+      .welcome {
+        align-items: flex-start
+      }
+      .welcome p {
+        max-width: 280px;
+        line-height: 1.45
+      }
+      .button-primary {
+        font-size: 10px;
+        padding: 10px 11px;
+        white-space: nowrap
+      }
+      .layout-main {
+        grid-template-columns: 1fr
+      }
+      .chart-box {
+        height: 235px
+      }
+      .dispatch-card {
+        min-height: 0
+      }
+      .lower-grid {
+        grid-template-columns: 1fr 1fr
+      }
+      .lower-card:last-child {
+        grid-column: span 2
+      }
+
+    }
+
+    @media(max-width:460px) {
+      .page-title {
+        font-size: 22px
+      }
+      .topbar {
+        gap: 8px
+      }
+      .date-chip {
+        display: none
+      }
+      .kpis {
+        gap: 9px
+      }
+      .kpi {
+        padding: 13px;
+        min-height: 116px
+      }
+      .kpi-value {
+        font-size: 23px
+      }
+      .layout-main, .lower-grid {
+        gap: 10px
+      }
+      .chart-card {
+        padding: 15px 13px
+      }
+      .card-head {
+        gap: 8px
+      }
+      .chart-subtitle {
+        max-width: 210px
+      }
+      .range-select button {
+        padding: 6px
+      }
+      .lower-card {
+        padding: 14px
+      }
+      .mix-wrap {
+        gap: 10px
+      }
+      .donut {
+        width: 80px;
+        height: 80px
+      }
+      .mix-legend {
+        gap: 8px
+      }
+      .welcome {
+        display: block
+      }
+      .welcome .button-primary {
+        margin-top: 13px
+      }
+      .lower-grid {
+        grid-template-columns: 1fr
+      }
+      .lower-card:last-child {
+        grid-column: auto
+      }
+
+    }
+
+    /* Color theme adjustments */
+    :root {
+      --mint: #c9ff5c;
+      --teal: #54ebc8;
+      --purple: #d09cff;
+      --orange: #ffc06f;
+      --red: #ff758b;
+      --blue: #8db6ff
+    }
+
+    body {
+      background: radial-gradient(ellipse at 75% -12%, #263d2d 0, transparent 36%), radial-gradient(ellipse at 100% 30%, #25203b 0, transparent 28%), var(--bg)
+    }
+
+    .brand-mark {
+      background: linear-gradient(145deg, #d9ff83, #9cffb2);
+      box-shadow: 0 5px 26px #bafa6560
+    }
+
+    .card {
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #48523f;
+      box-shadow: 0 15px 38px #0004, 0 0 25px #bafa6508
+    }
+
+    .kpi:nth-child(2) {
+      background: linear-gradient(145deg, #28221d, #1b1e23)
+    }
+
+    .kpi:nth-child(3) {
+      background: linear-gradient(145deg, #251f30, #1b1e25)
+    }
+
+    .kpi:nth-child(4) {
+      background: linear-gradient(145deg, #2a1e26, #1b1e25)
+    }
+
+    .chart-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 0
+    }
+
+    .metric-select, .chart-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .metric-select {
+      padding: 3px;
+      background: #14181e;
+      border: 1px solid #303640;
+      border-radius: 9px
+    }
+
+    .metric-select button, .play-button {
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 9px;
+      background: transparent;
+      color: #9ba4b0;
+      font: 10px var(--mono);
+      transition: .18s
+    }
+
+    .metric-select button:hover, .play-button:hover {
+      color: #fff;
+      background: #2b3039
+    }
+
+    .metric-select button.selected {
+      background: #34412d;
+      color: var(--mint);
+      box-shadow: inset 0 0 0 1px #bafa6530
+    }
+
+    .play-button {
+      border: 1px solid #354331;
+      background: #20271f;
+      color: var(--mint);
+      font-weight: 500
+    }
+
+    .chart-toolbar .range-select {
+      height: 32px
+    }
+
+    .chart-toolbar .range-select button {
+      padding: 5px 7px
+    }
+
+    .legend-mark.sun {
+      background: var(--orange)
+    }
+
+    .legend-mark.weather {
+      background: var(--purple)
+    }
+
+    .legend-mark.humidity {
+      background: var(--teal)
+    }
+
+    .legend-mark.critical {
+      background: repeating-linear-gradient(90deg, var(--red) 0 3px, transparent 3px 5px)
+    }
+
+    .hour-insight {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid #2a3038;
+      padding: 10px 0 1px;
+      margin-top: 10px
+    }
+
+    .insight-icon {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #2b3528;
+      color: var(--mint);
+      flex: none
+    }
+
+    .insight-copy {
+      min-width: 0
+    }
+
+    .insight-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #e7ebef
+    }
+
+    .insight-detail {
+      font-size: 9px;
+      color: #98a2af;
+      margin: 3px 0 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .dispatch-row {
+      width: 100%;
+      border-left: 2px solid transparent;
+      text-align: left;
+      color: inherit;
+      background: transparent;
+      font: inherit;
+      cursor: pointer;
+      transition: background .18s, border-color .18s;
+      padding-left: 6px;
+      padding-right: 5px;
+      border-radius: 5px
+    }
+
+    .dispatch-row:hover, .dispatch-row.selected {
+      background: #232a2c;
+      border-left-color: var(--mint)
+    }
+
+    .dispatch-row:focus-visible, .metric-select button:focus-visible, .range-select button:focus-visible, .play-button:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 2px
+    }
+
+    .chart-box canvas {
+      cursor: crosshair
+    }
+
+    @media(max-width:760px) {
+      .chart-toolbar {
+        align-items: flex-start
+      }
+      .metric-select, .chart-actions {
+        max-width: 100%
+      }
+      .chart-toolbar .range-select button {
+        padding: 5px 6px
+      }
+
+    }
+
+    @media(max-width:460px) {
+      .chart-toolbar {
+        gap: 7px
+      }
+      .metric-select button {
+        padding: 7px 7px;
+        font-size: 9px
+      }
+      .chart-actions {
+        width: 100%;
+        justify-content: space-between
+      }
+      .hour-insight {
+        margin-top: 8px
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto!important;
+        transition: none!important;
+        animation: none!important
+      }
+
+    }
+
+    :root {
+      color-scheme: light;
+      --bg: #f4f2fc;
+      --panel: #fff;
+      --panel2: #fff;
+      --line: #e5e1f2;
+      --muted: #73748b;
+      --text: #25233d;
+      --mint: #72d957;
+      --teal: #19bfae;
+      --purple: #8157ec;
+      --orange: #f68a42;
+      --red: #e84c70;
+      --blue: #4a7ee8
+    }
+
+    body {
+      color: var(--text);
+      background: radial-gradient(ellipse at 75% -10%, #dfd7ff 0, transparent 35%), radial-gradient(ellipse at 2% 48%, #dcfff0 0, transparent 29%), radial-gradient(ellipse at 100% 80%, #ffe6de 0, transparent 24%), #f4f2fc
+    }
+
+    .sidebar {
+      background: linear-gradient(165deg, #684be0 0%, #5030b5 47%, #321b7c 100%);
+      border-color: #593cc2;
+      box-shadow: 8px 0 28px #4d28a51a
+    }
+
+    .brand-mark {
+      background: linear-gradient(145deg, #e9ff86, #7df2cb);
+      color: #2d1970;
+      box-shadow: 0 5px 25px #d7ff7360
+    }
+
+    .brand-name {
+      color: #fff
+    }
+
+    .brand-sub {
+      color: #cdc3ff
+    }
+
+    .nav-label {
+      color: #c5baff
+    }
+
+    .nav a {
+      color: #e4ddff
+    }
+
+    .nav a:hover, .nav a.active {
+      background: #ffffff20;
+      color: #fff
+    }
+
+    .nav a.active {
+      box-shadow: inset 3px 0 #d6ff67
+    }
+
+    .nav-count {
+      color: #392181;
+      background: #d7ff67
+    }
+
+    .weather-card {
+      border-color: #9275ee;
+      background: linear-gradient(145deg, #ffffff22, #ffffff0c);
+      color: #fff
+    }
+
+    .weather-top, .weather-foot {
+      color: #d7d0ff
+    }
+
+    .weather-value {
+      color: #fff
+    }
+
+    .side-bottom {
+      color: #c9c1f5;
+      border-color: #ffffff30
+    }
+
+    .eyebrow {
+      color: #7954df
+    }
+
+    .page-title, .welcome h2 {
+      color: #272440
+    }
+
+    .welcome p {
+      color: #77758d
+    }
+
+    .date-chip, .icon-button {
+      background: #fff;
+      border-color: #e4e0f0;
+      color: #5a5872;
+      box-shadow: 0 4px 12px #4c3b8410
+    }
+
+    .connection-chip {
+      background: #e5f9e8;
+      border-color: #b9e9bb;
+      color: #347f45;
+      box-shadow: 0 4px 12px #368a3510
+    }
+
+    .status-dot {
+      background: #38c86a;
+      box-shadow: 0 0 11px #38c86a90;
+      animation: statusPulse 1.8s infinite
+    }
+
+    @keyframes statusPulse {
+      50% {
+        box-shadow: 0 0 0 5px #38c86a20, 0 0 13px #38c86a90
+      }
+
+    }
+
+    .button-primary {
+      background: linear-gradient(110deg, #7356ec, #b04bd5 58%, #e85f9b);
+      color: #fff;
+      box-shadow: 0 7px 20px #8459df40
+    }
+
+    .button-primary:hover {
+      filter: brightness(1.08);
+      box-shadow: 0 9px 24px #8459df55
+    }
+
+    .offline-note {
+      background: #fff5dc;
+      border-color: #ffd485;
+      color: #80571b
+    }
+
+    .offline-note code {
+      color: #6044a0
+    }
+
+    .card {
+      background: #fff;
+      border-color: #e5e1f0;
+      box-shadow: 0 12px 30px #51428a12
+    }
+
+    .card:hover {
+      border-color: #c7b8f7;
+      box-shadow: 0 16px 36px #6048b51e, 0 0 26px #a987ff12
+    }
+
+    .kpi {
+      background: linear-gradient(145deg, #f0fff2, #fff)!important;
+      border-color: #d9f0db
+    }
+
+    .kpi:nth-child(2) {
+      background: linear-gradient(145deg, #fff1e6, #fff)!important;
+      border-color: #f8dfca
+    }
+
+    .kpi:nth-child(3) {
+      background: linear-gradient(145deg, #f3edff, #fff)!important;
+      border-color: #e4d9ff
+    }
+
+    .kpi:nth-child(4) {
+      background: linear-gradient(145deg, #fff0f3, #fff)!important;
+      border-color: #f7d9e0
+    }
+
+    .kpi:after {
+      opacity: .18
+    }
+
+    .kpi-head {
+      color: #62627b
+    }
+
+    .kpi-value {
+      color: #25233d
+    }
+
+    .kpi-unit {
+      color: #74748b
+    }
+
+    .kpi-meta {
+      color: #77768e
+    }
+
+    .kpi-icon {
+      background: color-mix(in srgb, var(--accent) 16%, white);
+      filter: saturate(1.2)
+    }
+
+    .card-title {
+      color: #2b2946
+    }
+
+    .card-subtitle {
+      color: #77768e
+    }
+
+    .legend {
+      color: #66657d
+    }
+
+    .legend-mark {
+      box-shadow: 0 0 8px color-mix(in srgb, var(--mint) 38%, transparent)
+    }
+
+    .chart-toolbar .range-select, .metric-select {
+      background: #f8f7ff;
+      border-color: #e4dff2
+    }
+
+    .metric-select button {
+      color: #77748e
+    }
+
+    .metric-select button:hover {
+      color: #49348f;
+      background: #eee9ff
+    }
+
+    .metric-select button.selected {
+      background: linear-gradient(135deg, #7658ed, #a35ae5);
+      color: #fff;
+      box-shadow: 0 3px 10px #8359df44
+    }
+
+    .chart-toolbar .range-select button {
+      color: #77748e
+    }
+
+    .range-select button:hover {
+      background: #eee9ff;
+      color: #5943a0
+    }
+
+    .range-select button.selected {
+      background: linear-gradient(135deg, #7356ec, #a35ae5);
+      color: #fff;
+      box-shadow: 0 3px 9px #8359df35
+    }
+
+    .play-button {
+      background: linear-gradient(135deg, #edfbef, #e6fff5);
+      border-color: #bfe9d1;
+      color: #247b57
+    }
+
+    .play-button:hover {
+      background: #d8f8e4;
+      color: #185d42
+    }
+
+    .chart-box {
+      background: linear-gradient(145deg, #fbfaff, #f3fff8);
+      border: 1px solid #eae4f7;
+      border-radius: 12px;
+      padding: 10px 9px 4px
+    }
+
+    .chart-foot {
+      border-color: #eae6f2;
+      color: #77768a
+    }
+
+    .chart-foot strong {
+      color: #393652
+    }
+
+    .hour-insight {
+      border-color: #ece8f4
+    }
+
+    .insight-icon {
+      background: linear-gradient(145deg, #eaffde, #d7fff0);
+      color: #328c54
+    }
+
+    .insight-title {
+      color: #34314e
+    }
+
+    .insight-detail {
+      color: #77768b
+    }
+
+    .dispatch-current {
+      background: linear-gradient(120deg, #edffe7, #f4efff);
+      border-color: #dbeed2
+    }
+
+    .state-orb {
+      background: linear-gradient(145deg, #dcffd1, #efffdc);
+      color: #388c43
+    }
+
+    .state-name {
+      color: #30304a
+    }
+
+    .state-caption {
+      color: #74758b
+    }
+
+    .now-pill {
+      background: #e9e2ff;
+      color: #6743c0
+    }
+
+    .dispatch-row {
+      border-color: #eeeaf4
+    }
+
+    .dispatch-row:hover, .dispatch-row.selected {
+      background: #f4f0ff;
+      border-left-color: #835ce9
+    }
+
+    .dispatch-time {
+      color: #78778e
+    }
+
+    .dispatch-meter {
+      background: #eeeaf4
+    }
+
+    .dispatch-demand {
+      color: #383650
+    }
+
+    .mode-tag {
+      color: #16866e;
+      background: #dff9ed
+    }
+
+    .mode-tag.grid {
+      color: #3f68c2;
+      background: #e5edff
+    }
+
+    .mode-tag.risk {
+      color: #c7395b;
+      background: #ffe4ea
+    }
+
+    .donut:after {
+      background: #fff
+    }
+
+    .mix-line {
+      color: #66677e
+    }
+
+    .mix-line b {
+      color: #33314c
+    }
+
+    .mix-dot.utility {
+      background: #a5a4b5
+    }
+
+    .alert-item {
+      color: #696a80
+    }
+
+    .alert-item strong {
+      color: #3b3955
+    }
+
+    .alert-bullet {
+      background: #e5f9ee;
+      color: #198c70
+    }
+
+    .alert-bullet.warn {
+      background: #fff0d9;
+      color: #ce6f15
+    }
+
+    .upload-zone {
+      background: linear-gradient(145deg, #f5fff8, #f9f6ff);
+      border-color: #ccc0ed
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #8c66e9;
+      background: #f1eaff
+    }
+
+    .upload-icon {
+      background: linear-gradient(145deg, #ddffe7, #e8e0ff);
+      color: #714fd0
+    }
+
+    .upload-title {
+      color: #393651
+    }
+
+    .upload-hint {
+      color: #78768e
+    }
+
+    .upload-button {
+      background: linear-gradient(135deg, #ede6ff, #e5fff3);
+      color: #704fc5
+    }
+
+    .toast {
+      background: linear-gradient(135deg, #5235b5, #703cc2);
+      border-color: #8a65dc;
+      color: #fff;
+      box-shadow: 0 12px 32px #45268845
+    }
+
+    .bottom-note {
+      color: #8a879f
+    }
+
+    @media(max-width:760px) {
+      .sidebar {
+        background: linear-gradient(100deg, #684be0, #422291)
+      }
+      .nav a.active {
+        background: #ffffff24
+      }
+
+    }
+
+    /* Light theme palette */
+    :root {
+      color-scheme: light;
+      --bg: #f5f7ed;
+      --panel: #fff;
+      --panel2: #fff;
+      --line: #dfe8d8;
+      --muted: #6d7d72;
+      --text: #17352a;
+      --mint: #b3ec45;
+      --teal: #25c7a5;
+      --purple: #438af0;
+      --orange: #ff9c39;
+      --red: #e94f61;
+      --blue: #438af0
+    }
+
+    body {
+      color: #17352a;
+      background: radial-gradient(ellipse at 70% -12%, #e2f5b8 0, transparent 33%), radial-gradient(ellipse at 95% 50%, #ffead4 0, transparent 25%), radial-gradient(ellipse at 4% 80%, #d9f7ec 0, transparent 28%), #f5f7ed
+    }
+
+    .app {
+      grid-template-columns: 244px minmax(0, 1fr)
+    }
+
+    .sidebar {
+      background: linear-gradient(165deg, #164734 0%, #10372e 58%, #0b2c29 100%);
+      border-right: 1px solid #1d5642;
+      box-shadow: 8px 0 28px #102e1e18;
+      padding: 25px 16px
+    }
+
+    .brand {
+      padding-bottom: 32px
+    }
+
+    .brand-mark {
+      background: linear-gradient(140deg, #f8d957, #aff45a 65%, #74e2be);
+      color: #173d2c;
+      box-shadow: 0 5px 23px #d1ff5b52
+    }
+
+    .brand-name {
+      color: #f4ffe9;
+      font-size: 17px
+    }
+
+    .brand-sub {
+      color: #9fc3a8
+    }
+
+    .nav-label {
+      color: #82ab91
+    }
+
+    .nav a {
+      color: #c8ded0;
+      padding: 12px;
+      border-radius: 11px
+    }
+
+    .nav a:hover, .nav a.active {
+      background: #ffffff12;
+      color: #fff
+    }
+
+    .nav a.active {
+      box-shadow: inset 3px 0 #c9f34c;
+      background: linear-gradient(90deg, #c9f34c20, #ffffff08)
+    }
+
+    .nav-count {
+      color: #16372a;
+      background: #cdf55e
+    }
+
+    .weather-card {
+      border-color: #367050;
+      background: linear-gradient(145deg, #ffffff16, #ffffff08);
+      box-shadow: inset 0 1px #ffffff12
+    }
+
+    .weather-top, .weather-foot {
+      color: #a7c8b2
+    }
+
+    .weather-value {
+      color: #f4ffe9
+    }
+
+    .side-bottom {
+      color: #83a892;
+      border-color: #ffffff1a
+    }
+
+    .main {
+      padding: 30px clamp(20px, 3.2vw, 48px) 44px;
+      max-width: 1760px
+    }
+
+    .topbar {
+      margin-bottom: 27px
+    }
+
+    .eyebrow {
+      color: #4e971d;
+      font-size: 10px
+    }
+
+    .page-title {
+      color: #153b2c;
+      font-size: clamp(27px, 3vw, 36px);
+      letter-spacing: -.065em
+    }
+
+    .date-chip, .icon-button {
+      background: #fff;
+      border: 1px solid #dfe8d7;
+      color: #486052;
+      box-shadow: 0 5px 15px #25442a0c
+    }
+
+    .connection-chip {
+      background: #e0f8df;
+      border-color: #b9e8b5;
+      color: #26713d
+    }
+
+    .status-dot {
+      background: #39c86b;
+      box-shadow: 0 0 12px #39c86b9c
+    }
+
+    .welcome {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      align-items: center;
+      min-height: 147px;
+      padding: 24px 28px;
+      margin-bottom: 22px;
+      border: 1px solid #ffc75d;
+      border-radius: 22px;
+      background: linear-gradient(112deg, #ff9650 0%, #ffc34b 43%, #e7f45c 72%, #9ce9a1 100%);
+      box-shadow: 0 16px 35px #e79a3b2c
+    }
+
+    .welcome:after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      right: 22%;
+      top: -78px;
+      width: 275px;
+      height: 275px;
+      border-radius: 50%;
+      border: 1px solid #ffffff77;
+      box-shadow: 0 0 0 19px #ffffff1b, 0 0 0 39px #ffffff12;
+      background: radial-gradient(circle at 35% 35%, #fff8 0 3%, transparent 4% 100%)
+    }
+
+    .welcome h2 {
+      font-size: 21px;
+      color: #173b2a
+    }
+
+    .welcome p {
+      color: #36553b;
+      font-size: 12px
+    }
+
+    .welcome .button-primary {
+      position: relative;
+      z-index: 1;
+      background: #173d2d;
+      color: #e2ff86;
+      padding: 13px 18px;
+      border: 1px solid #ffffff40;
+      box-shadow: 0 8px 20px #173d2d2e
+    }
+
+    .welcome .button-primary:hover {
+      background: #21543b;
+      filter: none
+    }
+
+    .offline-note {
+      border-color: #f6c76f;
+      background: #fff5dc;
+      color: #80571a
+    }
+
+    .offline-note code {
+      color: #26713d
+    }
+
+    .card {
+      border: 1px solid #e0e8db;
+      border-radius: 19px;
+      background: #fff;
+      box-shadow: 0 10px 28px #193d2710
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #bdd69c;
+      box-shadow: 0 17px 38px #2852351a, 0 4px 14px #bed88322
+    }
+
+    .kpi {
+      min-height: 143px;
+      padding: 19px 20px;
+      background: linear-gradient(145deg, #f0ffe9, #fff)!important;
+      border-color: #d5edc7!important;
+      border-radius: 18px
+    }
+
+    .kpi:nth-child(2) {
+      background: linear-gradient(145deg, #fff2dd, #fff)!important;
+      border-color: #f8dfbf!important
+    }
+
+    .kpi:nth-child(3) {
+      background: linear-gradient(145deg, #e8fbf6, #fff)!important;
+      border-color: #c9eee1!important
+    }
+
+    .kpi:nth-child(4) {
+      background: linear-gradient(145deg, #fff0e8, #fff)!important;
+      border-color: #f6d9c8!important
+    }
+
+    .kpi:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      bottom: 18px;
+      width: 4px;
+      border-radius: 0 5px 5px 0;
+      background: var(--accent)
+    }
+
+    .kpi:after {
+      opacity: .23;
+      right: -15px;
+      top: -43px;
+      width: 125px;
+      height: 125px
+    }
+
+    .kpi-head {
+      color: #526b59;
+      font-size: 11px
+    }
+
+    .kpi-value {
+      color: #173b2a;
+      font-size: 32px
+    }
+
+    .kpi-unit {
+      color: #55705d
+    }
+
+    .kpi-meta {
+      color: #6b806f
+    }
+
+    .kpi-icon {
+      background: color-mix(in srgb, var(--accent) 23%, white);
+      filter: saturate(1.15)
+    }
+
+    .layout-main {
+      gap: 17px;
+      margin-bottom: 17px
+    }
+
+    .chart-card, .dispatch-card {
+      padding: 21px 22px;
+      border-radius: 20px
+    }
+
+    .card-title {
+      color: #193b2d;
+      font-size: 15px
+    }
+
+    .card-subtitle {
+      color: #748378;
+      font-size: 11px
+    }
+
+    .chart-toolbar {
+      margin-top: 15px
+    }
+
+    .metric-select, .chart-toolbar .range-select {
+      background: #f4f8ef;
+      border-color: #dfe8d8
+    }
+
+    .metric-select button {
+      color: #718172
+    }
+
+    .metric-select button:hover {
+      background: #e8f2de;
+      color: #315d32
+    }
+
+    .metric-select button.selected {
+      background: linear-gradient(135deg, #b8ef4c, #6fdfa4);
+      color: #183d2b;
+      box-shadow: 0 3px 11px #8bc84344
+    }
+
+    .chart-toolbar .range-select button {
+      color: #718172
+    }
+
+    .chart-toolbar .range-select button.selected {
+      background: #174532;
+      color: #d9ff75;
+      box-shadow: 0 3px 9px #17453230
+    }
+
+    .play-button {
+      background: linear-gradient(130deg, #fff0dc, #ffe0cb);
+      border-color: #ffd0a4;
+      color: #b85422
+    }
+
+    .play-button:hover {
+      background: #ffd9b8;
+      color: #873815
+    }
+
+    .legend {
+      color: #617466
+    }
+
+    .legend-mark {
+      box-shadow: 0 0 9px color-mix(in srgb, var(--mint) 50%, transparent)
+    }
+
+    .legend-mark.sun {
+      background: #ff982f
+    }
+
+    .legend-mark.weather {
+      background: #438af0
+    }
+
+    .legend-mark.humidity {
+      background: #19bda3
+    }
+
+    .legend-mark.threshold {
+      background: repeating-linear-gradient(90deg, #ff982f 0 3px, transparent 3px 5px)
+    }
+
+    .legend-mark.critical {
+      background: repeating-linear-gradient(90deg, #e94f61 0 3px, transparent 3px 5px)
+    }
+
+    .chart-box {
+      height: 278px;
+      background: linear-gradient(150deg, #fbfff3, #f1fbf6);
+      border: 1px solid #e1edd9;
+      border-radius: 15px;
+      padding: 11px 10px 5px
+    }
+
+    .chart-foot {
+      border-color: #e7eee2;
+      color: #738174
+    }
+
+    .chart-foot strong {
+      color: #284936
+    }
+
+    .hour-insight {
+      border-color: #e7eee2
+    }
+
+    .insight-icon {
+      background: linear-gradient(140deg, #dafa82, #8be4a9);
+      color: #17462e
+    }
+
+    .insight-title {
+      color: #274634
+    }
+
+    .insight-detail {
+      color: #708274
+    }
+
+    .dispatch-card {
+      background: linear-gradient(150deg, #174c39, #0d352d);
+      border-color: #23644a;
+      box-shadow: 0 14px 30px #143e2b24
+    }
+
+    .dispatch-card:hover {
+      border-color: #55a963;
+      box-shadow: 0 18px 40px #143e2b35
+    }
+
+    .dispatch-card .card-title {
+      color: #f3ffe7
+    }
+
+    .dispatch-card .card-subtitle {
+      color: #b5d2bb
+    }
+
+    .dispatch-card .kpi-icon {
+      background: #ffffff18;
+      color: #d8ff69
+    }
+
+    .dispatch-current {
+      background: linear-gradient(110deg, #ffffff17, #c8f46a18);
+      border-color: #ffffff26
+    }
+
+    .dispatch-current .state-orb {
+      background: linear-gradient(145deg, #dafa82, #8be4a9);
+      color: #17462e!important
+    }
+
+    .dispatch-current .state-name {
+      color: #f3ffe7
+    }
+
+    .dispatch-current .state-caption {
+      color: #b4d2bb
+    }
+
+    .now-pill {
+      background: #d9f675;
+      color: #234527;
+      font-weight: 700
+    }
+
+    .dispatch-list .dispatch-row {
+      border-color: #ffffff19;
+      color: #eef8ef
+    }
+
+    .dispatch-row:hover, .dispatch-row.selected {
+      background: #ffffff15;
+      border-left-color: #d6f65c
+    }
+
+    .dispatch-time {
+      color: #b5d1be
+    }
+
+    .dispatch-demand {
+      color: #f1faef
+    }
+
+    .dispatch-meter {
+      background: #ffffff25
+    }
+
+    .mode-tag {
+      background: #c8f4da;
+      color: #176a49
+    }
+
+    .mode-tag.grid {
+      background: #dfeaff;
+      color: #345fb5
+    }
+
+    .mode-tag.risk {
+      background: #ffe0e1;
+      color: #b52f4d
+    }
+
+    .lower-grid {
+      gap: 17px
+    }
+
+    .lower-card {
+      padding: 20px;
+      min-height: 190px;
+      border-radius: 19px
+    }
+
+    .donut {
+      filter: drop-shadow(0 5px 9px #456c291c)
+    }
+
+    .donut:after {
+      background: #fff
+    }
+
+    .mix-line {
+      color: #607163
+    }
+
+    .mix-line b {
+      color: #264633
+    }
+
+    .mix-dot {
+      background: #b3ec45;
+      box-shadow: 0 0 8px #a1d93a88
+    }
+
+    .mix-dot.utility {
+      background: #a8b0ad
+    }
+
+    .alert-item {
+      color: #67796c
+    }
+
+    .alert-item strong {
+      color: #274633
+    }
+
+    .alert-bullet {
+      background: #dff8e9;
+      color: #159b7c
+    }
+
+    .alert-bullet.warn {
+      background: #fff0d7;
+      color: #ca6b14
+    }
+
+    .upload-zone {
+      background: linear-gradient(130deg, #f1fff0, #effaf8);
+      border-color: #a7d9ac;
+      border-radius: 14px;
+      padding: 14px
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #68c55a;
+      background: #e8ffe7;
+      box-shadow: 0 0 0 4px #71c85a20
+    }
+
+    .upload-icon {
+      background: linear-gradient(140deg, #dcff97, #8fe8bf);
+      color: #205b39;
+      width: 36px;
+      height: 36px
+    }
+
+    .upload-title {
+      color: #294b36
+    }
+
+    .upload-hint {
+      color: #718274
+    }
+
+    .upload-button {
+      background: #e1f8dc;
+      color: #347a37
+    }
+
+    .upload-button:hover {
+      background: #cef0c5
+    }
+
+    .toast {
+      background: linear-gradient(135deg, #174c39, #217448);
+      border-color: #62ae61;
+      box-shadow: 0 12px 32px #173b2c45
+    }
+
+    .bottom-note {
+      color: #778578
+    }
+
+    @media(max-width:1120px) {
+      .app {
+        grid-template-columns: 220px minmax(0, 1fr)
+      }
+      .layout-main {
+        grid-template-columns: minmax(0, 1.3fr) minmax(250px, .9fr)
+      }
+
+    }
+
+    @media(max-width:760px) {
+      .app {
+        grid-template-columns: 1fr
+      }
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 11px 15px;
+        display: block;
+        border-right: 0;
+        border-bottom: 0
+      }
+      .brand {
+        padding: 2px 3px 10px
+      }
+      .nav-label, .weather-card, .side-bottom {
+        display: none
+      }
+      .nav {
+        display: flex;
+        gap: 5px;
+        overflow: auto
+      }
+      .nav a {
+        font-size: 10px;
+        padding: 9px 10px;
+        white-space: nowrap
+      }
+      .nav-ico {
+        display: none
+      }
+      .nav-count {
+        display: none
+      }
+      .main {
+        padding: 22px 15px 30px
+      }
+      .topbar {
+        margin-bottom: 19px
+      }
+      .welcome {
+        padding: 21px;
+        border-radius: 18px;
+        min-height: 130px
+      }
+      .welcome:after {
+        right: 12%;
+        width: 220px;
+        height: 220px
+      }
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px
+      }
+      .kpi {
+        min-height: 125px
+      }
+      .layout-main {
+        grid-template-columns: 1fr;
+        gap: 12px
+      }
+      .chart-box {
+        height: 250px
+      }
+      .lower-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px
+      }
+      .lower-card:last-child {
+        grid-column: span 2
+      }
+
+    }
+
+    @media(max-width:460px) {
+      .main {
+        padding: 19px 12px 26px
+      }
+      .page-title {
+        font-size: 24px
+      }
+      .date-chip {
+        display: none
+      }
+      .top-actions {
+        gap: 6px
+      }
+      .kpis {
+        gap: 8px
+      }
+      .kpi {
+        padding: 14px 13px;
+        min-height: 117px
+      }
+      .kpi-value {
+        font-size: 25px
+      }
+      .welcome {
+        display: block;
+        padding: 18px
+      }
+      .welcome h2 {
+        font-size: 18px
+      }
+      .welcome .button-primary {
+        margin-top: 13px
+      }
+      .chart-card, .dispatch-card {
+        padding: 16px 13px
+      }
+      .chart-box {
+        height: 225px
+      }
+      .chart-toolbar {
+        gap: 8px
+      }
+      .metric-select button {
+        padding: 7px 7px;
+        font-size: 9px
+      }
+      .chart-actions {
+        width: 100%;
+        justify-content: space-between
+      }
+      .lower-grid {
+        grid-template-columns: 1fr
+      }
+      .lower-card:last-child {
+        grid-column: auto
+      }
+      .lower-card {
+        min-height: 0
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .status-dot {
+        animation: none
+      }
+
+    }
+
+    .simulator {
+      position: relative;
+      overflow: hidden;
+      margin: 0 0 20px;
+      padding: 24px 25px 19px;
+      border: 1px solid #245e45;
+      border-radius: 24px;
+      background: radial-gradient(ellipse at 22% 5%, #27734b66, transparent 38%), radial-gradient(ellipse at 100% 100%, #147f6c42, transparent 34%), linear-gradient(135deg, #123d30, #0d302c 72%, #102b2d);
+      color: #f5ffed;
+      box-shadow: 0 20px 50px #173e2b30
+    }
+
+    .simulator:before {
+      content: "";
+      position: absolute;
+      right: -130px;
+      top: -160px;
+      width: 390px;
+      height: 390px;
+      border-radius: 50%;
+      border: 1px solid #d3ff5f1a;
+      box-shadow: 0 0 0 24px #d3ff5f08, 0 0 0 50px #d3ff5f06;
+      pointer-events: none
+    }
+
+    .simulator-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 17px
+    }
+
+    .simulator-head h2 {
+      margin: 7px 0 3px;
+      color: #f8ffe9;
+      font: 800 clamp(21px, 2.2vw, 29px) var(--display);
+      letter-spacing: -.06em
+    }
+
+    .simulator-head p {
+      margin: 0;
+      color: #b1d1b5;
+      font-size: 11px
+    }
+
+    .sim-kicker, .control-kicker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #c9f34c;
+      font: 10px var(--mono);
+      letter-spacing: .15em
+    }
+
+    .live-pulse, .flow-live-label i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #c9f34c;
+      box-shadow: 0 0 12px #c9f34c;
+      animation: pulseDot 1.7s infinite
+    }
+
+    .scenario-badge {
+      margin-top: 3px;
+      padding: 8px 11px;
+      border: 1px solid #9ebd5b54;
+      border-radius: 99px;
+      background: #c9f34c15;
+      color: #d7fb82;
+      font: 9px var(--mono);
+      letter-spacing: .07em;
+      white-space: nowrap
+    }
+
+    .simulator-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(220px, .62fr);
+      gap: 13px;
+      align-items: stretch
+    }
+
+    .flow-stage {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #ffffff18;
+      border-radius: 19px;
+      background: #0e342b
+    }
+
+    .flow-stage-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 17px 0;
+      color: #9ab9a0;
+      font: 9px var(--mono);
+      letter-spacing: .13em
+    }
+
+    .flow-live-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #92b6a0;
+      letter-spacing: .04em
+    }
+
+    .flow-live-label i {
+      width: 6px;
+      height: 6px;
+      animation: none
+    }
+
+    .flow-live-label b {
+      color: #e8ffbc;
+      font-weight: 500
+    }
+
+    .flow-map {
+      display: block;
+      width: 100%;
+      height: auto;
+      padding: 3px 7px 0
+    }
+
+    .flow-route {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 8 10;
+      opacity: .2;
+      transition: opacity .35s, filter .35s
+    }
+
+    .flow-route.active {
+      opacity: 1;
+      animation: flowDash 1.15s linear infinite;
+      filter: url(#softGlow)
+    }
+
+    .solar-route {
+      stroke: #ffb343
+    }
+
+    .battery-route {
+      stroke: #c9f34c
+    }
+
+    .grid-route {
+      stroke: #75b8ff
+    }
+
+    .load-route {
+      stroke: #ff8167
+    }
+
+    .node-shell {
+      fill: #19493a;
+      stroke: #47805b;
+      stroke-width: 1.2;
+      transition: fill .2s, stroke .2s, filter .2s
+    }
+
+    .diagram-node {
+      cursor: pointer;
+      outline: none
+    }
+
+    .diagram-node:hover .node-shell, .diagram-node:focus-visible .node-shell {
+      fill: #246448;
+      stroke: #d4ff73;
+      filter: url(#softGlow)
+    }
+
+    .node-icon {
+      fill: #173b2d;
+      font: 700 16px var(--sans);
+      text-anchor: middle
+    }
+
+    .node-label {
+      fill: #cae4c7;
+      font: 700 9px var(--mono);
+      letter-spacing: .09em
+    }
+
+    .node-reading {
+      fill: #fff9e9;
+      font: 600 11px var(--display)
+    }
+
+    .core-shell {
+      fill: url(#coreGlow);
+      stroke: #eeffad;
+      stroke-width: 1.5;
+      filter: url(#softGlow)
+    }
+
+    .core-mark {
+      fill: #164333;
+      font: 24px var(--sans);
+      text-anchor: middle
+    }
+
+    .core-label {
+      fill: #163b2c;
+      font: 800 7px var(--mono);
+      letter-spacing: .04em;
+      text-anchor: middle
+    }
+
+    .core-sub {
+      fill: #2d6742;
+      font: 7px var(--mono);
+      text-anchor: middle
+    }
+
+    .load-shell {
+      fill: #563a34;
+      stroke: #bd6953
+    }
+
+    .svg-caption {
+      fill: #678f76;
+      font: 8px var(--mono);
+      letter-spacing: .14em
+    }
+
+    .node-detail {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      min-height: 43px;
+      padding: 9px 16px;
+      border-top: 1px solid #ffffff13;
+      color: #b6d4bb;
+      font-size: 10px;
+      line-height: 1.4
+    }
+
+    .node-detail-icon {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      flex: none;
+      border-radius: 7px;
+      background: #d2f564;
+      color: #153d2d
+    }
+
+    .live-readout {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 17px 17px 15px;
+      border: 1px solid #ffffff1b;
+      border-radius: 19px;
+      background: linear-gradient(155deg, #1b523b, #143d36 75%, #143431)
+    }
+
+    .readout-label, .reserve-top span, .readout-weather span {
+      color: #a5c7a6;
+      font: 9px var(--mono);
+      letter-spacing: .13em
+    }
+
+    .readout-time {
+      margin-top: 7px;
+      color: #eaffcd;
+      font: 600 12px var(--display)
+    }
+
+    .readout-demand {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      margin: 14px 0 11px
+    }
+
+    .readout-demand>span:first-child {
+      color: white;
+      font: 800 41px/.95 var(--display);
+      letter-spacing: -.08em
+    }
+
+    .readout-demand small {
+      color: #aad29b;
+      font: 600 12px var(--mono)
+    }
+
+    .readout-trend {
+      margin-left: auto;
+      padding: 6px 8px;
+      border-radius: 7px;
+      background: #ffffff12;
+      color: #d9f683;
+      font: 9px var(--mono)
+    }
+
+    .readout-state {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 0 13px;
+      border-bottom: 1px solid #ffffff17
+    }
+
+    .state-dot-mini {
+      width: 9px;
+      height: 9px;
+      flex: none;
+      border-radius: 50%;
+      background: #c9f34c;
+      box-shadow: 0 0 12px #c9f34c99
+    }
+
+    .readout-state b, .readout-state small {
+      display: block
+    }
+
+    .readout-state b {
+      color: #f4ffed;
+      font: 600 10px var(--display)
+    }
+
+    .readout-state small {
+      margin-top: 3px;
+      color: #9fbea5;
+      font-size: 9px
+    }
+
+    .reserve-block {
+      margin-top: 13px
+    }
+
+    .reserve-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .reserve-top b {
+      color: #efffc4;
+      font: 600 13px var(--mono)
+    }
+
+    .reserve-track {
+      height: 7px;
+      margin: 8px 0 6px;
+      border-radius: 99px;
+      background: #ffffff1c;
+      overflow: hidden
+    }
+
+    .reserve-track span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ffb343, #c9f34c, #43dfbb);
+      transition: width .4s
+    }
+
+    .reserve-block>small {
+      color: #8eaf99;
+      font-size: 8px
+    }
+
+    .readout-weather {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 12px
+    }
+
+    .readout-weather>div {
+      display: grid;
+      gap: 5px
+    }
+
+    .readout-weather b {
+      color: #f1ffea;
+      font: 600 11px var(--mono)
+    }
+
+    .sim-controls {
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
+      padding: 16px 17px 0;
+      border: 1px solid #ffffff1b;
+      border-radius: 17px;
+      background: #ffffff08
+    }
+
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px
+    }
+
+    .timeline-head>div {
+      display: grid;
+      gap: 6px
+    }
+
+    .timeline-head>div b {
+      color: #f4ffe7;
+      font: 700 13px var(--display)
+    }
+
+    .timeline-current {
+      color: #b1d29e;
+      font: 10px var(--mono)
+    }
+
+    .timeline-controls {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-top: 13px
+    }
+
+    .step-button {
+      width: 32px;
+      height: 32px;
+      flex: none;
+      border: 1px solid #73925970;
+      border-radius: 10px;
+      background: #c9f34c16;
+      color: #dcff88;
+      font-size: 21px;
+      line-height: 1
+    }
+
+    .step-button:disabled, .replay-button:disabled {
+      opacity: .38;
+      cursor: not-allowed
+    }
+
+    .timeline-controls input[type=range], .stress-control input[type=range] {
+      width: 100%;
+      height: 6px;
+      margin: 0;
+      appearance: none;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #c9f34c, #43dfbb);
+      accent-color: #c9f34c;
+      cursor: pointer
+    }
+
+    .timeline-controls input[type=range]::-webkit-slider-thumb, .stress-control input[type=range]::-webkit-slider-thumb {
+      width: 17px;
+      height: 17px;
+      appearance: none;
+      border: 3px solid #f2ffd0;
+      border-radius: 50%;
+      background: #36cf9a;
+      box-shadow: 0 0 0 4px #c9f34c32
+    }
+
+    .timeline-controls input[type=range]::-moz-range-thumb, .stress-control input[type=range]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border: 3px solid #f2ffd0;
+      border-radius: 50%;
+      background: #36cf9a;
+      box-shadow: 0 0 0 4px #c9f34c32
+    }
+
+    .replay-button {
+      flex: none;
+      padding: 8px 12px;
+      border-color: #a2c25270;
+      background: linear-gradient(135deg, #d5fa70, #43dfbb);
+      color: #173d2d;
+      font-weight: 700
+    }
+
+    .replay-button:hover {
+      background: #e4ff9a;
+      color: #173d2d
+    }
+
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 42px 0;
+      color: #789c83;
+      font: 8px var(--mono);
+      letter-spacing: .1em
+    }
+
+    .stress-control {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) minmax(120px, .8fr) 55px auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 15px;
+      padding: 12px 0 9px;
+      border-top: 1px solid #ffffff16
+    }
+
+    .stress-copy {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .stress-icon {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      border-radius: 9px;
+      background: #ffb34322;
+      color: #ffc16a
+    }
+
+    .stress-copy b, .stress-copy small {
+      display: block
+    }
+
+    .stress-copy b {
+      color: #f4ffe7;
+      font: 600 10px var(--display)
+    }
+
+    .stress-copy small {
+      margin-top: 3px;
+      color: #9cbea4;
+      font-size: 8px
+    }
+
+    .stress-control input[type=range] {
+      background: linear-gradient(90deg, #ffb343, #ff8167)
+    }
+
+    .stress-control input[type=range]::-webkit-slider-thumb {
+      background: #ff9b51
+    }
+
+    .stress-control input[type=range]::-moz-range-thumb {
+      background: #ff9b51
+    }
+
+    .stress-control output {
+      color: #ffc16a;
+      font: 600 11px var(--mono);
+      text-align: right
+    }
+
+    .reset-button {
+      border: 1px solid #ffffff28;
+      border-radius: 7px;
+      background: #ffffff10;
+      color: #c4dfc4;
+      padding: 6px 9px;
+      font-size: 9px
+    }
+
+    .reset-button:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    .scenario-note {
+      margin: 0 0 1px;
+      color: #7fa58b;
+      font-size: 8px;
+      line-height: 1.4
+    }
+
+    .simulator button:focus-visible, .simulator input:focus-visible {
+      outline: 2px solid #ffe36a;
+      outline-offset: 3px
+    }
+
+    .simulator [disabled] {
+      cursor: not-allowed
+    }
+
+    .kpis {
+      margin-top: 0
+    }
+
+    .flow-route:not(.active) {
+      animation: none
+    }
+
+    .scenario-badge.scenario-active {
+      border-color: #ffb34377;
+      background: #ffb34320;
+      color: #ffd093
+    }
+
+    .readout-trend.critical {
+      background: #ff816733;
+      color: #ffc0a8
+    }
+
+    @keyframes flowDash {
+      to {
+        stroke-dashoffset: -36
+      }
+
+    }
+
+    @keyframes pulseDot {
+      50% {
+        opacity: .38;
+        box-shadow: 0 0 2px #c9f34c
+      }
+
+    }
+
+    @media(max-width:1000px) {
+      .simulator-body {
+        grid-template-columns: minmax(0, 1.45fr) minmax(205px, .7fr)
+      }
+      .flow-map {
+        padding-inline: 0
+      }
+      .live-readout {
+        padding: 15px 13px
+      }
+
+    }
+
+    @media(max-width:760px) {
+      .simulator {
+        padding: 19px 16px 15px;
+        border-radius: 20px
+      }
+      .simulator-body {
+        grid-template-columns: 1fr
+      }
+      .live-readout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 15px;
+        align-items: center
+      }
+      .readout-label, .readout-time {
+        grid-column: 1
+      }
+      .readout-demand {
+        grid-column: 1;
+        margin: 9px 0
+      }
+      .readout-demand>span:first-child {
+        font-size: 36px
+      }
+      .readout-trend {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end
+      }
+      .readout-state {
+        grid-column: 2;
+        grid-row: 1/4;
+        border: 0;
+        padding: 0
+      }
+      .reserve-block {
+        grid-column: 1/3;
+        margin-top: 7px
+      }
+      .readout-weather {
+        grid-column: 1/3;
+        margin-top: 9px;
+        padding-top: 9px;
+        border-top: 1px solid #ffffff17
+      }
+      .stress-control {
+        grid-template-columns: 1fr auto auto
+      }
+      .stress-control input[type=range] {
+        grid-column: 1/4;
+        grid-row: 2
+      }
+      .stress-control output {
+        grid-column: 2;
+        grid-row: 1
+      }
+      .reset-button {
+        grid-column: 3;
+        grid-row: 1
+      }
+      .scenario-note {
+        padding-bottom: 2px
+      }
+      .flow-map {
+        min-height: 190px
+      }
+
+    }
+
+    @media(max-width:460px) {
+      .simulator {
+        padding: 16px 12px 12px
+      }
+      .simulator-head {
+        display: block
+      }
+      .simulator-head h2 {
+        font-size: 22px
+      }
+      .simulator-head p {
+        max-width: 280px;
+        line-height: 1.45
+      }
+      .scenario-badge {
+        display: inline-block;
+        margin-top: 12px
+      }
+      .flow-stage-top {
+        padding: 12px 11px 0;
+        font-size: 8px
+      }
+      .flow-map {
+        min-height: 0;
+        padding-inline: 0
+      }
+      .node-detail {
+        padding: 8px 10px;
+        font-size: 9px
+      }
+      .live-readout {
+        padding: 13px 12px
+      }
+      .readout-demand>span:first-child {
+        font-size: 32px
+      }
+      .sim-controls {
+        padding: 13px 10px 0
+      }
+      .timeline-head {
+        align-items: flex-start;
+        display: grid
+      }
+      .timeline-current {
+        font-size: 9px
+      }
+      .timeline-controls {
+        gap: 7px
+      }
+      .step-button {
+        width: 29px;
+        height: 29px
+      }
+      .replay-button {
+        padding: 7px 9px;
+        font-size: 9px
+      }
+      .timeline-labels {
+        margin-inline: 36px;
+        font-size: 7px
+      }
+      .stress-control {
+        gap: 8px
+      }
+      .stress-copy b {
+        font-size: 9px
+      }
+      .stress-copy small {
+        max-width: 180px;
+        line-height: 1.35
+      }
+      .scenario-note {
+        font-size: 7px
+      }
+
+    }
+
+    @media(max-width:760px) {
+      .flow-stage {
+        overflow-x: auto
+      }
+      .flow-map {
+        min-width: 560px;
+        min-height: 0
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .flow-route.active, .live-pulse {
+        animation: none
+      }
+
+    }
+
+    :root {
+      color-scheme: dark;
+      --bg: #081923;
+      --panel: #102833;
+      --panel2: #142f3a;
+      --line: #254550;
+      --muted: #8ca7ae;
+      --text: #e9f3f0;
+      --mint: #34d6be;
+      --teal: #39dfc8;
+      --purple: #7dbaf0;
+      --orange: #ffc04d;
+      --red: #ff705e;
+      --blue: #62b9f1;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --display: 'Manrope', sans-serif
+    }
+
+    body {
+      color: var(--text);
+      background: radial-gradient(ellipse at 70% -15%, #173f4a 0, transparent 37%), radial-gradient(ellipse at 3% 40%, #102e38 0, transparent 29%), #081923
+    }
+
+    .app {
+      display: block;
+      min-height: 100vh
+    }
+
+    .sidebar {
+      height: 68px;
+      position: sticky;
+      z-index: 12;
+      top: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 clamp(18px, 4vw, 62px);
+      border: 0;
+      border-bottom: 1px solid #27454e;
+      background: #0a2029ed;
+      box-shadow: 0 10px 28px #0003;
+      backdrop-filter: blur(18px)
+    }
+
+    .brand {
+      padding: 0;
+      gap: 10px
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: linear-gradient(145deg, #ffd26a, #ff9e43);
+      color: #3c2c12;
+      box-shadow: 0 0 24px #ffbd4b40
+    }
+
+    .brand-name {
+      color: #f0f7f3
+    }
+
+    .brand-sub {
+      color: #91aeb3
+    }
+
+    .nav-label, .side-spacer, .weather-card, .side-bottom {
+      display: none
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .nav a {
+      padding: 9px 12px;
+      color: #9bb2b7;
+      font-size: 11px;
+      border-radius: 8px
+    }
+
+    .nav a:hover, .nav a.active {
+      color: #ecfaf7;
+      background: #193741
+    }
+
+    .nav a.active {
+      box-shadow: inset 0 -2px #34d6be
+    }
+
+    .nav-count {
+      color: #10292f;
+      background: #ffc04d
+    }
+
+    .main {
+      max-width: 1680px;
+      padding: 28px clamp(18px, 4vw, 62px) 50px
+    }
+
+    .topbar {
+      margin-bottom: 21px
+    }
+
+    .eyebrow {
+      color: #f5be55
+    }
+
+    .page-title {
+      color: #f2f8f5;
+      font-size: clamp(27px, 3vw, 37px);
+      letter-spacing: -.065em
+    }
+
+    .date-chip, .icon-button {
+      background: #102833;
+      border-color: #254550;
+      color: #b8cbd0;
+      box-shadow: none
+    }
+
+    .connection-chip {
+      background: #103e3e;
+      border-color: #237a6c;
+      color: #a9f2df
+    }
+
+    .status-dot {
+      background: #39dfc8;
+      box-shadow: 0 0 10px #39dfc899
+    }
+
+    .welcome {
+      min-height: 134px;
+      margin-bottom: 17px;
+      padding: 22px 25px;
+      border: 1px solid #725c36;
+      border-radius: 14px;
+      background: linear-gradient(105deg, #172d34 0%, #142b34 58%, #2e3027 100%);
+      box-shadow: inset 4px 0 #ffc04d, 0 14px 35px #0002
+    }
+
+    .welcome:after {
+      right: 17%;
+      top: -102px;
+      width: 300px;
+      height: 300px;
+      border-color: #ffc04d38;
+      box-shadow: 0 0 0 20px #ffc04d0d, 0 0 0 45px #ffc04d08;
+      background: radial-gradient(circle at 35% 35%, #ffd57b30 0 4%, transparent 5% 100%)
+    }
+
+    .welcome h2 {
+      color: #f3f8f4;
+      font-size: 23px
+    }
+
+    .welcome p {
+      color: #a4bcc0;
+      font-size: 11px
+    }
+
+    .welcome .button-primary, .button-primary {
+      border-radius: 8px;
+      background: #ffc04d;
+      color: #30240f;
+      box-shadow: 0 6px 20px #ffc04d22
+    }
+
+    .welcome .button-primary:hover, .button-primary:hover {
+      background: #ffd273;
+      color: #30240f
+    }
+
+    .offline-note {
+      border-color: #9a6336;
+      background: #3b2d20;
+      color: #ffda9b
+    }
+
+    .offline-note code {
+      color: #ffca68
+    }
+
+    .card {
+      border: 1px solid #254550;
+      border-radius: 14px;
+      background: #102833;
+      box-shadow: 0 14px 36px #0002;
+      color: #e6f0ed
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #397181;
+      box-shadow: 0 18px 42px #0003
+    }
+
+    .kpis {
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .kpi {
+      min-height: 123px;
+      padding: 16px 17px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #122c36, #102833)!important;
+      border-color: #254550!important;
+      border-top: 2px solid var(--accent)!important
+    }
+
+    .kpi:before {
+      display: none
+    }
+
+    .kpi:after {
+      right: -22px;
+      top: -35px;
+      opacity: .11
+    }
+
+    .kpi-head, .kpi-meta {
+      color: #9ab0b5
+    }
+
+    .kpi-value {
+      color: #f0f6f2;
+      font-size: 29px
+    }
+
+    .kpi-unit {
+      color: #a6bcc0
+    }
+
+    .kpi-icon {
+      background: color-mix(in srgb, var(--accent) 17%, #102833);
+      filter: none
+    }
+
+    .layout-main {
+      gap: 12px;
+      margin-bottom: 12px
+    }
+
+    .chart-card, .dispatch-card {
+      padding: 17px;
+      border-radius: 14px
+    }
+
+    .card-title {
+      color: #e8f2ef;
+      font-size: 14px
+    }
+
+    .card-subtitle {
+      color: #91aab0;
+      font-size: 10px
+    }
+
+    .chart-toolbar {
+      margin-top: 13px
+    }
+
+    .metric-select, .chart-toolbar .range-select {
+      background: #0a2029;
+      border-color: #294853
+    }
+
+    .metric-select button {
+      color: #91aab0
+    }
+
+    .metric-select button:hover {
+      background: #193c45;
+      color: #e6f6f1
+    }
+
+    .metric-select button.selected {
+      background: #34d6be;
+      color: #09252c;
+      box-shadow: 0 3px 12px #34d6be35
+    }
+
+    .chart-toolbar .range-select button {
+      color: #93abb0
+    }
+
+    .chart-toolbar .range-select button.selected {
+      background: #284c55;
+      color: #ffcf68;
+      box-shadow: none
+    }
+
+    .legend {
+      color: #a3b8bc
+    }
+
+    .chart-box {
+      height: 275px;
+      background: linear-gradient(155deg, #0b2029, #0d252f);
+      border: 1px solid #1e3d47;
+      border-radius: 11px
+    }
+
+    .chart-foot {
+      border-color: #254550;
+      color: #8ea8ad
+    }
+
+    .chart-foot strong {
+      color: #e9f3ef
+    }
+
+    .hour-insight {
+      border-color: #254550
+    }
+
+    .insight-icon {
+      background: #4e3c1d;
+      color: #ffd06a
+    }
+
+    .insight-title {
+      color: #ebf4f0
+    }
+
+    .insight-detail {
+      color: #91a9af
+    }
+
+    .dispatch-card {
+      background: linear-gradient(150deg, #12333e, #102833);
+      border-color: #2d5360;
+      box-shadow: 0 14px 36px #0003
+    }
+
+    .dispatch-card:hover {
+      border-color: #438394
+    }
+
+    .dispatch-card .card-title {
+      color: #edf7f4
+    }
+
+    .dispatch-card .card-subtitle {
+      color: #9eb8bd
+    }
+
+    .dispatch-card .dispatch-current {
+      background: #0b222b;
+      border-color: #2d4a53
+    }
+
+    .dispatch-card .state-orb {
+      background: #25474d;
+      color: #60dfc9!important
+    }
+
+    .dispatch-card .state-name {
+      color: #eff7f3
+    }
+
+    .dispatch-card .state-caption {
+      color: #9ab3b7
+    }
+
+    .dispatch-card .now-pill {
+      background: #ffc04d;
+      color: #30240f
+    }
+
+    .dispatch-row {
+      border-color: #203e48
+    }
+
+    .dispatch-list .dispatch-row {
+      color: #e4eeeb
+    }
+
+    .dispatch-row:hover, .dispatch-row.selected {
+      background: #183943;
+      border-left-color: #ffc04d
+    }
+
+    .dispatch-time {
+      color: #9bb0b5
+    }
+
+    .dispatch-demand {
+      color: #eef6f2
+    }
+
+    .dispatch-meter {
+      background: #29434b
+    }
+
+    .mode-tag {
+      background: #17443f;
+      color: #73e5cb
+    }
+
+    .mode-tag.grid {
+      background: #18384b;
+      color: #8bcaff
+    }
+
+    .mode-tag.risk {
+      background: #542e2b;
+      color: #ff9d8c
+    }
+
+    .lower-grid {
+      gap: 12px
+    }
+
+    .lower-card {
+      min-height: 170px;
+      padding: 17px;
+      border-radius: 14px
+    }
+
+    .donut:after {
+      background: #102833
+    }
+
+    .mix-line {
+      color: #a6b8ba
+    }
+
+    .mix-line b {
+      color: #edf5f2
+    }
+
+    .mix-dot {
+      background: #34d6be;
+      box-shadow: 0 0 9px #34d6be77
+    }
+
+    .mix-dot.utility {
+      background: #597785
+    }
+
+    .alert-item {
+      color: #a7b9ba
+    }
+
+    .alert-item strong {
+      color: #edf6f1
+    }
+
+    .alert-bullet {
+      background: #163e3a;
+      color: #64e1c5
+    }
+
+    .alert-bullet.warn {
+      background: #4a3022;
+      color: #ffc04d
+    }
+
+    .upload-zone {
+      background: #0c222b;
+      border-color: #31515a;
+      border-radius: 10px
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #ffc04d;
+      background: #18343a;
+      box-shadow: 0 0 0 3px #ffc04d1c
+    }
+
+    .upload-icon {
+      background: #47381f;
+      color: #ffc04d
+    }
+
+    .upload-title {
+      color: #edf5f1
+    }
+
+    .upload-hint {
+      color: #91a9ad
+    }
+
+    .upload-button {
+      background: #47381f;
+      color: #ffd279
+    }
+
+    .upload-button:hover {
+      background: #604927
+    }
+
+    .toast {
+      background: #153a40;
+      border-color: #35786d;
+      color: #f0faf6;
+      box-shadow: 0 14px 36px #0005
+    }
+
+    .bottom-note {
+      color: #718c92
+    }
+
+    .simulator {
+      margin-bottom: 14px;
+      border-color: #294d58;
+      border-radius: 16px;
+      background: radial-gradient(ellipse at 18% 0%, #17424b77, transparent 42%), linear-gradient(135deg, #0d2630, #0a2029 68%, #10252b);
+      box-shadow: 0 20px 55px #0004
+    }
+
+    .simulator:before {
+      border-color: #ffc04d16;
+      box-shadow: 0 0 0 24px #34d6be07, 0 0 0 50px #ffc04d06
+    }
+
+    .simulator-head h2 {
+      color: #f1f7f4
+    }
+
+    .simulator-head p {
+      color: #98b1b6
+    }
+
+    .sim-kicker, .control-kicker {
+      color: #ffc04d
+    }
+
+    .live-pulse {
+      background: #ffc04d;
+      box-shadow: 0 0 10px #ffc04d;
+      animation: none
+    }
+
+    .scenario-badge {
+      border-color: #527166;
+      background: #173a37;
+      color: #87e4c9
+    }
+
+    .flow-stage {
+      background: #091e27;
+      border-color: #27434b
+    }
+
+    .flow-stage-top {
+      color: #89a5aa
+    }
+
+    .flow-live-label {
+      color: #9bb2b6
+    }
+
+    .flow-live-label i {
+      background: #62b9f1;
+      box-shadow: none
+    }
+
+    .flow-live-label b {
+      color: #ffcf68
+    }
+
+    .flow-map rect:first-of-type {
+      fill: #091e27
+    }
+
+    .node-shell {
+      fill: #132f39;
+      stroke: #42616a
+    }
+
+    .node-label {
+      fill: #a6bec1
+    }
+
+    .node-reading {
+      fill: #f4f6eb
+    }
+
+    .core-shell {
+      stroke: #ffe19a
+    }
+
+    .core-label {
+      fill: #163740
+    }
+
+    .core-sub {
+      fill: #245962
+    }
+
+    .node-detail {
+      color: #a4bbbf
+    }
+
+    .node-detail-icon {
+      background: #45391f;
+      color: #ffd36a
+    }
+
+    .live-readout {
+      border-color: #345762;
+      background: linear-gradient(145deg, #153944, #102a34)
+    }
+
+    .readout-label, .reserve-top span, .readout-weather span {
+      color: #91afb4
+    }
+
+    .readout-time {
+      color: #ffd477
+    }
+
+    .readout-demand>span:first-child {
+      color: #f6f6eb
+    }
+
+    .readout-demand small {
+      color: #9bdace
+    }
+
+    .readout-trend {
+      background: #183c43;
+      color: #b0f0db
+    }
+
+    .readout-state b {
+      color: #eff7f3
+    }
+
+    .readout-state small, .reserve-block>small {
+      color: #8ba8ad
+    }
+
+    .reserve-top b {
+      color: #ffcf68
+    }
+
+    .reserve-track {
+      background: #24444d
+    }
+
+    .reserve-track span {
+      background: linear-gradient(90deg, #34d6be, #ffc04d, #ff705e)
+    }
+
+    .sim-controls {
+      border-color: #284852;
+      background: #ffffff05
+    }
+
+    .timeline-head>div b {
+      color: #edf5f1
+    }
+
+    .timeline-current {
+      color: #90cdbf
+    }
+
+    .step-button {
+      border-color: #3d6268;
+      background: #12383b;
+      color: #ffcc62
+    }
+
+    .timeline-controls input[type=range] {
+      background: linear-gradient(90deg, #34d6be, #ffc04d)
+    }
+
+    .timeline-controls input[type=range]::-webkit-slider-thumb {
+      background: #ffc04d;
+      border-color: #fff0c8;
+      box-shadow: 0 0 0 4px #ffc04d2b
+    }
+
+    .timeline-controls input[type=range]::-moz-range-thumb {
+      background: #ffc04d;
+      border-color: #fff0c8;
+      box-shadow: 0 0 0 4px #ffc04d2b
+    }
+
+    .replay-button {
+      border-color: #ffc04d;
+      background: #ffc04d;
+      color: #33250c
+    }
+
+    .replay-button:hover {
+      background: #ffda80;
+      color: #33250c
+    }
+
+    .timeline-labels {
+      color: #718f95
+    }
+
+    .stress-icon {
+      background: #4e3422;
+      color: #ffc04d
+    }
+
+    .stress-copy b {
+      color: #eff7f3
+    }
+
+    .stress-copy small {
+      color: #94adb1
+    }
+
+    .stress-control input[type=range] {
+      background: linear-gradient(90deg, #ffc04d, #ff705e)
+    }
+
+    .stress-control input[type=range]::-webkit-slider-thumb {
+      background: #ff8d5e;
+      border-color: #fff0c8;
+      box-shadow: 0 0 0 4px #ff8d5e2b
+    }
+
+    .stress-control input[type=range]::-moz-range-thumb {
+      background: #ff8d5e;
+      border-color: #fff0c8;
+      box-shadow: 0 0 0 4px #ff8d5e2b
+    }
+
+    .stress-control output {
+      color: #ffc04d
+    }
+
+    .reset-button {
+      border-color: #3a5861;
+      background: #142f38;
+      color: #adbec0
+    }
+
+    .scenario-note {
+      color: #769297
+    }
+
+    .scenario-badge.scenario-active {
+      border-color: #bd6e3c;
+      background: #493321;
+      color: #ffd08b
+    }
+
+    .simulator button:focus-visible, .simulator input:focus-visible {
+      outline-color: #ffc04d
+    }
+
+    .hour-strip {
+      display: grid;
+      grid-template-columns: repeat(var(--hour-count, 24), minmax(3px, 1fr));
+      align-items: end;
+      gap: 4px;
+      height: 68px;
+      margin: 18px 0 4px;
+      padding: 0 1px
+    }
+
+    .hour-mark {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      height: 100%;
+      min-width: 0;
+      padding: 0 1px;
+      border: 0;
+      background: transparent;
+      cursor: pointer
+    }
+
+    .hour-mark-fill {
+      display: block;
+      width: 100%;
+      height: var(--bar-height, 40%);
+      min-height: 9px;
+      border-radius: 3px 3px 1px 1px;
+      background: var(--bar-color, #34d6be);
+      opacity: .5;
+      transition: height .25s ease, opacity .2s, filter .2s;
+      box-shadow: 0 0 0 transparent
+    }
+
+    .hour-mark:hover .hour-mark-fill, .hour-mark.selected .hour-mark-fill {
+      opacity: 1;
+      filter: brightness(1.16);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--bar-color) 35%, transparent)
+    }
+
+    .hour-mark.selected:before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #fff4cf;
+      box-shadow: 0 0 9px #ffc04d
+    }
+
+    .hour-mark:focus-visible {
+      outline: 1px solid #ffc04d;
+      outline-offset: 2px;
+      border-radius: 4px
+    }
+
+    .hour-mark::after {
+      content: attr(data-tip);
+      position: absolute;
+      z-index: 4;
+      left: 50%;
+      bottom: calc(var(--bar-height, 40%) + 10px);
+      transform: translate(-50%, 4px);
+      padding: 5px 7px;
+      border: 1px solid #3b6169;
+      border-radius: 5px;
+      background: #071923;
+      color: #f4f6ed;
+      font: 9px var(--mono);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s, transform .15s
+    }
+
+    .hour-mark:hover::after, .hour-mark:focus-visible::after {
+      opacity: 1;
+      transform: translate(-50%, 0)
+    }
+
+    .hour-strip-axis {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1px;
+      color: #738f95;
+      font: 8px var(--mono)
+    }
+
+    @media(max-width:760px) {
+      .sidebar {
+        height: auto;
+        min-height: 66px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
+        padding: 10px 14px
+      }
+      .brand {
+        padding: 0 2px
+      }
+      .nav {
+        overflow-x: auto;
+        padding-bottom: 1px
+      }
+      .nav a {
+        white-space: nowrap;
+        padding: 8px 10px
+      }
+      .main {
+        padding: 22px 15px 32px
+      }
+      .welcome {
+        min-height: 0;
+        padding: 19px
+      }
+      .welcome:after {
+        right: 8%;
+        width: 220px;
+        height: 220px
+      }
+      .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+      .layout-main {
+        grid-template-columns: 1fr
+      }
+      .chart-box {
+        height: 245px
+      }
+      .lower-grid {
+        grid-template-columns: 1fr 1fr
+      }
+      .lower-card:last-child {
+        grid-column: span 2
+      }
+      .hour-strip {
+        gap: 3px;
+        height: 57px
+      }
+
+    }
+
+    @media(max-width:460px) {
+      .main {
+        padding: 18px 12px 26px
+      }
+      .topbar {
+        align-items: flex-start
+      }
+      .page-title {
+        font-size: 23px
+      }
+      .date-chip {
+        display: none
+      }
+      .welcome {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start
+      }
+      .welcome h2 {
+        font-size: 18px
+      }
+      .welcome .button-primary {
+        white-space: nowrap;
+        padding: 10px
+      }
+      .kpis {
+        gap: 8px
+      }
+      .kpi {
+        min-height: 112px;
+        padding: 13px
+      }
+      .kpi-value {
+        font-size: 24px
+      }
+      .simulator {
+        padding: 16px 11px 12px
+      }
+      .simulator-head {
+        display: block
+      }
+      .simulator-head h2 {
+        font-size: 21px
+      }
+      .simulator-head p {
+        line-height: 1.5
+      }
+      .scenario-badge {
+        display: inline-block;
+        margin-top: 10px
+      }
+      .flow-stage {
+        overflow-x: auto
+      }
+      .flow-map {
+        min-width: 550px
+      }
+      .flow-stage-top {
+        padding: 12px 10px 0
+      }
+      .node-detail {
+        padding: 8px 10px;
+        font-size: 9px
+      }
+      .live-readout {
+        padding: 13px 11px
+      }
+      .sim-controls {
+        padding: 13px 9px 0
+      }
+      .timeline-head {
+        display: grid
+      }
+      .timeline-current {
+        font-size: 9px
+      }
+      .timeline-controls {
+        gap: 6px
+      }
+      .step-button {
+        width: 28px;
+        height: 29px
+      }
+      .replay-button {
+        padding: 7px 9px;
+        font-size: 9px
+      }
+      .timeline-labels {
+        margin-inline: 34px;
+        font-size: 7px
+      }
+      .hour-strip {
+        height: 48px;
+        gap: 2px
+      }
+      .hour-strip-axis {
+        font-size: 7px
+      }
+      .stress-control {
+        grid-template-columns: 1fr auto auto;
+        gap: 8px
+      }
+      .stress-control input[type=range] {
+        grid-column: 1/4;
+        grid-row: 2
+      }
+      .stress-control output {
+        grid-column: 2;
+        grid-row: 1
+      }
+      .reset-button {
+        grid-column: 3;
+        grid-row: 1
+      }
+      .scenario-note {
+        font-size: 7px
+      }
+      .chart-card, .dispatch-card, .lower-card {
+        padding: 14px 12px
+      }
+      .chart-box {
+        height: 220px
+      }
+      .lower-grid {
+        grid-template-columns: 1fr
+      }
+      .lower-card:last-child {
+        grid-column: auto
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .live-pulse, .flow-route.active {
+        animation: none
+      }
+      .hour-mark-fill {
+        transition: none
+      }
+
+    }
+
+    .flow-route.active {
+      animation: none
+    }
+
+    .simulator.playing .flow-route.active {
+      animation: flowDash 1.15s linear infinite
+    }
+
+    @media(max-width:760px) {
+      .threshold-block {
+        grid-column: 1/3;
+        margin-top: 7px
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .flow-route.active {
+        animation: none!important
+      }
+
+    }
+
+    .kpi:nth-child(2), .kpi:nth-child(3), .kpi:nth-child(4) {
+      background: linear-gradient(145deg, #122c36, #102833)!important;
+      border-color: #254550!important;
+      border-top-color: var(--accent)!important
+    }
+
+    .grid-node .node-shell {
+      transition: width .24s ease, fill .2s, stroke .2s, filter .2s
+    }
+
+    .grid-node.recommended .node-shell {
+      width: 190px
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .grid-node .node-shell {
+        transition: none
+      }
+
+    }
+
+    .flow-route.solar-route {
+      stroke: #ffc04d
+    }
+
+    .flow-route.battery-route {
+      stroke: #34d6be
+    }
+
+    .flow-route.grid-route {
+      stroke: #62b9f1
+    }
+
+    .flow-route.load-route {
+      stroke: #ff705e
+    }
+
+    .core-mark {
+      fill: #15333a
+    }
+
+    .core-label {
+      fill: #15333a
+    }
+
+    .core-sub {
+      fill: #245d60
+    }
+
+    .node-icon {
+      fill: #15333a
+    }
+
+    .node-detail-icon {
+      background: #42371f;
+      color: #ffd36c
+    }
+
+    .legend-mark {
+      box-shadow: none;
+      background: #34d6be
+    }
+
+    .legend-mark.sun {
+      background: #ffc04d
+    }
+
+    .legend-mark.weather {
+      background: #62b9f1
+    }
+
+    .legend-mark.humidity {
+      background: #45d6c5
+    }
+
+    .legend-mark.threshold {
+      background: repeating-linear-gradient(90deg, #ffc04d 0 3px, transparent 3px 5px)
+    }
+
+    .legend-mark.critical {
+      background: repeating-linear-gradient(90deg, #ff705e 0 3px, transparent 3px 5px)
+    }
+
+    .alert-bullet.info {
+      background: #18384b;
+      color: #8bcaff
+    }
+
+    .hour-mark.storage {
+      --bar-color: #ffc04d
+    }
+
+    .hour-mark.grid {
+      --bar-color: #34d6be
+    }
+
+    .hour-mark.risk {
+      --bar-color: #ff705e
+    }
+
+    .threshold-block {
+      margin-top: 13px;
+      padding-top: 12px;
+      border-top: 1px solid #ffffff18
+    }
+
+    .threshold-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .threshold-top span {
+      color: #91afb4;
+      font: 9px var(--mono);
+      letter-spacing: .1em
+    }
+
+    .threshold-top b {
+      color: #b2e9d9;
+      font: 600 12px var(--mono);
+      text-align: right
+    }
+
+    .threshold-track {
+      height: 7px;
+      margin: 8px 0 6px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #24444d
+    }
+
+    .threshold-track span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #34d6be 0%, #ffc04d 76%, #ff705e);
+      transition: width .35s, background .2s
+    }
+
+    .threshold-track span.over {
+      background: #ff705e
+    }
+
+    .threshold-block>small {
+      color: #8ba8ad;
+      font-size: 8px;
+      line-height: 1.4
+    }
+
+    .section-dialog {
+      width: min(980px, calc(100vw - 32px));
+      max-width: calc(100vw - 32px);
+      max-height: min(88vh, 900px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #3b626c;
+      border-radius: 18px;
+      background: #0b2029;
+      color: #e9f3f0;
+      box-shadow: 0 32px 100px #0009
+    }
+
+    .section-dialog[open] {
+      display: block
+    }
+
+    .section-dialog::backdrop {
+      background: #031117bd;
+      backdrop-filter: blur(7px)
+    }
+
+    #sectionDialog[data-section="dispatch"], #sectionDialog[data-section="telemetry"], #sectionDialog[data-section="alerts"] {
+      width: min(760px, calc(100vw - 32px))
+    }
+
+    .section-dialog-shell {
+      display: flex;
+      max-height: min(88vh, 900px);
+      flex-direction: column
+    }
+
+    .section-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 21px 23px 17px;
+      border-bottom: 1px solid #254550;
+      background: radial-gradient(ellipse at 10% 0, #1b4650 0, transparent 65%), #0b2029
+    }
+
+    .section-dialog-copy {
+      min-width: 0
+    }
+
+    .section-dialog-kicker {
+      color: #ffc04d;
+      font: 10px var(--mono);
+      letter-spacing: .13em
+    }
+
+    .section-dialog-head h2 {
+      margin: 6px 0 0;
+      color: #f2f8f5;
+      font: 700 22px var(--display);
+      letter-spacing: -.045em
+    }
+
+    .section-dialog-head p {
+      margin: 5px 0 0;
+      color: #9bb4b9;
+      font-size: 11px;
+      line-height: 1.5
+    }
+
+    .section-dialog-close {
+      width: 34px;
+      height: 34px;
+      flex: none;
+      border: 1px solid #34535b;
+      border-radius: 9px;
+      background: #132f38;
+      color: #d7e6e2;
+      font-size: 22px;
+      line-height: 1;
+      transition: .18s
+    }
+
+    .section-dialog-close:hover {
+      border-color: #ffc04d;
+      background: #3a3222;
+      color: #ffd477;
+      transform: rotate(4deg)
+    }
+
+    .section-dialog-close:focus-visible {
+      outline: 2px solid #ffc04d;
+      outline-offset: 3px
+    }
+
+    .section-dialog-mount {
+      min-height: 0;
+      overflow: auto;
+      padding: 17px;
+      background: radial-gradient(ellipse at 95% 0, #112f38 0, transparent 52%), #091c25;
+      overscroll-behavior: contain
+    }
+
+    .section-dialog-mount>.card {
+      margin: 0;
+      min-width: 0;
+      transform: none!important;
+      border-color: #2b505b;
+      box-shadow: 0 12px 35px #0003
+    }
+
+    .section-dialog-mount>.card:hover {
+      transform: none!important;
+      border-color: #2b505b;
+      box-shadow: 0 12px 35px #0003
+    }
+
+    #sectionDialog[data-section="forecast"] .chart-box {
+      height: 320px
+    }
+
+    #sectionDialog[data-section="telemetry"] .lower-card, #sectionDialog[data-section="alerts"] .lower-card {
+      min-height: 150px
+    }
+
+    @media(max-width:760px) {
+      .section-dialog {
+        width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        max-height: 92vh;
+        border-radius: 15px
+      }
+      .section-dialog-shell {
+        max-height: 92vh
+      }
+      .section-dialog-head {
+        padding: 17px 16px 14px
+      }
+      .section-dialog-head h2 {
+        font-size: 20px
+      }
+      .section-dialog-mount {
+        padding: 11px
+      }
+      #sectionDialog[data-section="forecast"] .chart-box {
+        height: 260px
+      }
+
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .section-dialog-close {
+        transition: none
+      }
+
+    }
+  </style>
+
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="SpringGrid home">
+        <span class="brand-mark">✳</span><span><span class="brand-name">SpringGrid</span>
+        
+        <span class="brand-sub">ENERGY CONTROL</span></span>
+      </a>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav" aria-label="Dashboard sections">
+        <a class="active" href="#overview" data-panel="overview" aria-current="page"><span class="nav-ico">◫</span>Overview</a>
+        <a href="#forecast" data-panel="forecast"><span class="nav-ico">⌁</span>Forecast</a>
+        <a href="#dispatch" data-panel="dispatch"><span class="nav-ico">⟲</span>Dispatch</a>
+        <a href="#telemetry" data-panel="telemetry"><span class="nav-ico">▤</span>Telemetry</a>
+        <a href="#alerts" data-panel="alerts"><span class="nav-ico">♧</span>Alerts <span class="nav-count" id="navAlertCount">0</span></a>
+      </nav>
+      <div class="side-spacer"></div>
+      <div class="weather-card">
+        <div class="weather-top"><span>FORECAST CONDITIONS</span><span>☀</span></div>
+        <div class="weather-value" id="weatherTemp">--°</div>
+        <div class="weather-foot" id="weatherSummary">Waiting for telemetry</div>
+      </div>
+      <div class="side-bottom"><span>SPRINGGRID CORE</span></div>
+    </aside>
+
+    <main class="main" id="overview">
+      <header class="topbar">
+        <div><div class="eyebrow">MICROGRID / OVERVIEW</div><h1 class="page-title">Grid Operations</h1></div>
+        <div class="top-actions"><div class="date-chip">◷ <span id="dateLabel">Forecast Window</span></div>
+        <div class="connection-chip" id="connectionChip"><i class="status-dot"></i><span id="connectionText">Connecting Engine</span></div>
+        <button class="icon-button" id="downloadBtn" aria-label="Download forecast CSV" title="Download forecast CSV">⇩</button></div>
+      </header>
+
+      <section class="welcome">
+        <div><h2>Find the pressure points before they arrive.</h2>
+          <p id="welcomeText">24-hour Demand Forecast · Renewable-Storage Rule · 200 kW Overload Threshold.</p></div>
+        <button class="button-primary" id="runBtn"><span class="button-ico">↻</span>Run Forecast</button>
+      </section>
+
+      <div class="offline-note" id="offlineNote">Your forecast engine is offline.</div>
+
+      <section class="simulator card" id="liveFlow" aria-labelledby="flowTitle">
+        <div class="simulator-head">
+          <div><div class="sim-kicker"><span class="live-pulse"></span> GRID STATE / FORECAST PLAYBACK</div><h2 id="flowTitle">Dispatch, hour by hour.</h2><p>Real forecast inputs and project dispatch rules. Select an hour to inspect the recommendation.</p></div>
+          <span class="scenario-badge" id="scenarioBadge">BASE FORECAST</span>
+        </div>
+        <div class="simulator-body">
+          <div class="flow-stage">
+            <div class="flow-stage-top"><span>MODELLED DISPATCH ROUTING · NOT MEASURED POWER</span><span class="flow-live-label"><i></i> Forecast hour <b id="flowHourLabel">--:--</b></span></div>
+            <svg class="flow-map" viewBox="0 0 700 330" role="img" aria-labelledby="flowSvgTitle flowSvgDesc">
+              <title id="flowSvgTitle">Interactive dispatch recommendation map</title><desc id="flowSvgDesc">Solar irradiance and predicted demand come from the selected forecast hour. Highlighted routes show the project's recommended source mode, not measured power flow or generation.</desc>
+              <defs>
+                <pattern id="gridDots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#ffffff" opacity=".08"/></pattern>
+                <linearGradient id="coreGlow" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ffc04d"/><stop offset="1" stop-color="#34d6be"/></linearGradient>
+                <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <rect width="700" height="330" rx="20" fill="#10382d"/><rect width="700" height="330" rx="20" fill="url(#gridDots)"/>
+              <path id="solarPath" class="flow-route solar-route" d="M187 75 C245 75 250 140 306 153"/>
+              <path id="batteryPath" class="flow-route battery-route" d="M187 165 C240 165 250 165 306 165"/>
+              <path id="gridPath" class="flow-route grid-route" d="M187 255 C245 255 250 190 306 177"/>
+              <path id="loadPath" class="flow-route load-route" d="M408 165 C460 165 470 165 513 165"/>
+              <g class="diagram-node source-node" data-node="solar" role="button" tabindex="0" aria-label="Solar irradiance input details">
+                <rect class="node-shell" x="28" y="43" width="160" height="64" rx="14"/><circle cx="53" cy="75" r="15" fill="#ffb343"/><text x="53" y="80" class="node-icon">☼</text><text x="78" y="70" class="node-label">SOLAR</text><text id="flowSolarValue" x="78" y="89" class="node-reading">-- W/m²</text>
+              </g>
+              <g class="diagram-node source-node" data-node="battery" role="button" tabindex="0" aria-label="Storage dispatch recommendation details">
+                <rect class="node-shell" x="28" y="133" width="160" height="64" rx="14"/><circle cx="53" cy="165" r="15" fill="#34d6be"/><text x="53" y="170" class="node-icon">▰</text><text x="78" y="160" class="node-label">STORAGE RULE</text><text id="flowBatteryValue" x="78" y="179" class="node-reading">awaiting rule</text>
+              </g>
+              <g class="diagram-node source-node grid-node" id="gridSourceNode" data-node="utility" role="button" tabindex="0" aria-label="Main grid details">
+                <rect class="node-shell" x="28" y="223" width="160" height="64" rx="14"/><circle cx="53" cy="255" r="15" fill="#75b8ff"/><text x="53" y="260" class="node-icon">⌁</text><text x="78" y="250" class="node-label">MAIN GRID</text><text id="flowSourceValue" x="78" y="269" class="node-reading">standby</text>
+              </g>
+              <g class="diagram-node core-node" data-node="core" role="button" tabindex="0" aria-label="SpringGrid core details">
+                <circle cx="357" cy="165" r="58" fill="#c9f34c" opacity=".08" filter="url(#softGlow)"/><rect class="core-shell" x="306" y="114" width="102" height="102" rx="28"/><text x="357" y="159" class="core-mark">✳</text><text x="357" y="181" class="core-label">SPRINGGRID</text><text x="357" y="198" class="core-sub">DISPATCH CORE</text>
+              </g>
+              <g class="diagram-node load-node" data-node="load" role="button" tabindex="0" aria-label="Community demand details">
+                <rect class="node-shell load-shell" x="513" y="132" width="160" height="66" rx="15"/><circle cx="538" cy="165" r="15" fill="#ff8167"/><text x="538" y="170" class="node-icon">⌂</text><text x="563" y="159" class="node-label">COMMUNITY</text><text id="flowDemandValue" x="563" y="180" class="node-reading">-- kW</text>
+              </g>
+              <text x="27" y="316" class="svg-caption">SOURCE NETWORK</text><text x="513" y="316" class="svg-caption">FORECAST LOAD</text>
+            </svg>
+            <div class="node-detail" aria-live="polite"><span class="node-detail-icon">✦</span><span id="nodeDetail">Tap a source or destination to inspect its role in this hour.</span></div>
+          </div>
+          <aside class="live-readout" aria-label="Selected hour forecast readout">
+            <div class="readout-label">SELECTED MOMENT</div><div class="readout-time" id="flowDateLabel">Waiting for forecast</div>
+            <div class="readout-demand"><span id="flowDemand">--</span><small>kW</small><span class="readout-trend" id="flowMode">—</span></div>
+            <div class="readout-state"><span class="state-dot-mini" id="flowStateDot"></span><span><b id="flowModeLabel">No dispatch yet</b><small>Dispatch recommendation</small></span></div>
+            <div class="threshold-block"><div class="threshold-top"><span>OVERLOAD LINE · 200 kW</span><b id="headroomValue">--</b></div><div class="threshold-track"><span id="headroomBar"></span></div><small id="headroomNote">Headroom is calculated from the selected demand forecast.</small></div>
+            <div class="readout-weather"><div><span>SOLAR</span><b id="flowSolar">--</b></div><div><span>TEMP</span><b id="flowTemp">--</b></div></div>
+          </aside>
+        </div>
+        <div class="sim-controls">
+          <div class="timeline-head"><div><span class="control-kicker">TIME MACHINE</span><b id="timelineTitle">Scrub the next 24 hours</b></div><span class="timeline-current" id="timelineCurrent" aria-live="polite">Awaiting forecast</span></div>
+          <div class="hour-strip" id="hourStrip" role="group" aria-label="Select a forecast hour"><div class="empty-state">Hourly forecast markers will appear here.</div></div><div class="hour-strip-axis" id="hourStripAxis"><span>START</span><span>HOURS</span><span>END</span></div>
+          <div class="timeline-controls"><button class="step-button" id="stepBack" aria-label="Previous hour" disabled>‹</button><input id="hourScrubber" type="range" min="0" max="23" value="0" aria-label="Select forecast hour" disabled><button class="step-button" id="stepForward" aria-label="Next hour" disabled>›</button><button class="play-button replay-button" id="playBtn" aria-label="Replay forecast timeline" aria-pressed="false">▶ Play</button></div>
+          <div class="timeline-labels"><span>START</span><span id="timelineHint">24 HOUR FORECAST · CLICK, DRAG OR PLAY</span><span>END</span></div>
+          <div class="stress-control"><div class="stress-copy"><span class="stress-icon">⚡</span><span><b>What if demand spikes?</b><small>Stress-test the grid by adding simulated load</small></span></div><input id="stressSlider" type="range" min="0" max="25" step="1" value="0" aria-label="Simulated demand increase" disabled><output id="stressValue" aria-live="polite">+0%</output><button id="resetStress" class="reset-button" disabled>Reset</button></div>
+          <p class="scenario-note">Stress test is a what-if overlay. It preserves the original forecast and exports both base and scenario values.</p>
+        </div>
+      </section>
+
+      <section class="kpis" aria-label="Forecast summary">
+        <article class="card kpi" style="--accent:var(--teal)"><div class="kpi-head"><span>Window Starting Load</span><span class="kpi-icon">⌁</span></div><div class="kpi-value"><span id="currentDemand">--</span> <span class="kpi-unit">kW</span></div><div class="kpi-meta" id="currentMeta">First forecast hour</div></article>
+        <article class="card kpi" style="--accent:var(--orange)"><div class="kpi-head"><span>Peak Demand</span><span class="kpi-icon">↗</span></div><div class="kpi-value"><span id="peakDemand">--</span> <span class="kpi-unit">kW</span></div><div class="kpi-meta" id="peakMeta">Highest predicted load</div></article>
+        <article class="card kpi" style="--accent:var(--purple)"><div class="kpi-head"><span>Storage Mode Share</span><span class="kpi-icon">◈</span></div><div class="kpi-value"><span id="storageShare">--</span><span class="kpi-unit">%</span></div><div class="kpi-meta" id="storageMeta">Hours recommended for storage</div></article>
+        <article class="card kpi" style="--accent:var(--red)"><div class="kpi-head"><span>Overload Alerts</span><span class="kpi-icon">⚠</span></div><div class="kpi-value"><span id="alertCount">--</span></div><div class="kpi-meta" id="alertMeta">Demand at or above 200 kW</div></article>
+      </section>
+
+      <section class="layout-main">
+        <article class="card chart-card" id="forecast">
+          <div class="card-head"><div><h2 class="card-title">Forecast Explorer</h2><p class="card-subtitle" id="chartSubtitle">Hourly Demand Profile · 24 Hour Horizon</p></div></div>
+          <div class="chart-toolbar">
+            <div class="metric-select" role="group" aria-label="Choose chart metric"><button class="selected" data-metric="demand">Demand</button><button data-metric="solar">Solar</button><button data-metric="temperature">Temp</button><button data-metric="humidity">Humidity</button></div>
+            <div class="chart-actions"><div class="range-select" role="group" aria-label="Forecast chart range"><button data-range="6">6h</button><button data-range="12">12h</button><button data-range="24" class="selected">24h</button></div></div>
+          </div>
+          <div class="legend"><span><i class="legend-mark" id="metricLegendMark"></i><span id="metricLegendText">Predicted Demand · kW</span></span><span id="thresholdLegend"><i class="legend-mark threshold"></i>Storage · 160 kW</span><span id="criticalLegend"><i class="legend-mark critical"></i>Critical · 200 kW</span></div>
+          <div class="chart-box"><canvas id="demandChart" aria-label="Hourly demand forecast line chart"></canvas></div>
+          <div class="chart-foot"><span>Data Window: <strong id="horizonLabel">Awaiting data</strong></span><span id="chartMetricNote">Click a point to inspect its hour</span></div>
+          <div class="hour-insight" aria-live="polite"><span class="insight-icon">⌁</span><span class="insight-copy"><span class="insight-title" id="selectedHourTitle">Choose an hour</span><p class="insight-detail" id="selectedHourDetail">Select a chart point or dispatch row to inspect its forecast and weather.</p></span></div>
+        </article>
+
+        <article class="card dispatch-card" id="dispatch">
+          <div class="card-head"><div><h2 class="card-title">Power dispatch</h2><p class="card-subtitle">Rule-based source recommendations</p></div><span class="kpi-icon" style="--accent:var(--mint)">⟲</span></div>
+          <div class="dispatch-current"><div class="dispatch-state"><span class="state-orb" id="stateOrb">◈</span><span><span class="state-name" id="currentMode">Awaiting forecast</span><span class="state-caption" id="modeCaption">Source state for selected hour</span></span></div><span class="now-pill">RULES</span></div>
+          <div class="dispatch-list" id="dispatchList"><div class="empty-state">Run a forecast to see hourly source recommendations.</div></div>
+        </article>
+      </section>
+
+      <section class="lower-grid">
+        <article class="card lower-card">
+          <div class="card-head"><div><h2 class="card-title">Supply Mix</h2><p class="card-subtitle">Recommended Source Hours</p></div></div>
+          <div class="mix-wrap"><div class="donut" id="mixDonut"><div class="donut-center"><div class="donut-value" id="mixPercent">--</div><div class="donut-label">storage</div></div></div><div class="mix-legend"><div class="mix-line"><span><i class="mix-dot"></i>Renewable storage</span><b id="storageHours">-- h</b></div><div class="mix-line"><span><i class="mix-dot utility"></i>Main grid</span><b id="gridHours">-- h</b></div></div></div>
+        </article>
+        <article class="card lower-card" id="alerts">
+          <div class="card-head"><div><h2 class="card-title">Grid Watch</h2><p class="card-subtitle">Safety and Operating Signals</p></div><span class="kpi-icon" style="--accent:var(--orange)">⌁</span></div>
+          <div class="alert-list" id="alertList"><div class="alert-item"><span class="alert-bullet">✓</span><span>Load monitor is ready for forecast data.</span></div></div>
+        </article>
+        <article class="card lower-card" id="telemetry">
+          <div class="card-head"><div><h2 class="card-title">Telemetry Input</h2><p class="card-subtitle">CSV with the project weather features</p></div></div>
+          <div class="upload-zone" id="uploadZone"><span class="upload-icon">↥</span><span class="upload-text"><span class="upload-title">Import hourly telemetry</span><span class="upload-hint" id="fileName">timestamp · temperature · humidity · solar</span></span><button class="upload-button" id="browseBtn">Browse</button><input class="hidden-input" id="csvInput" type="file" accept=".csv,text/csv"></div>
+        </article>
+      </section>
+      <div class="bottom-note">SPRINGGRID · SMART MICROGRID FORECASTING</div>
+    </main>
+  </div>
+  <dialog class="section-dialog" id="sectionDialog" aria-labelledby="sectionDialogTitle">
+    <div class="section-dialog-shell">
+      <header class="section-dialog-head">
+        <div class="section-dialog-copy">
+          <span class="section-dialog-kicker" id="sectionDialogKicker">FOCUSED VIEW</span>
+          <h2 id="sectionDialogTitle">Forecast</h2>
+          <p id="sectionDialogDescription"></p>
+        </div>
+        <button class="section-dialog-close" id="sectionDialogClose" type="button" aria-label="Close focused view" autofocus>×</button>
+      </header>
+      <div class="section-dialog-mount" id="sectionDialogMount"></div>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const state = {
+      rows: [],
+      baseRows: [],
+      metadata: {},
+      stressPct: 0,
+      range: 24,
+      metric: 'demand',
+      selectedIndex: 0,
+      playTimer: null
+    };
+    const $ = id => document.getElementById(id);
+    let chart;
+    let toastTimer;
+    const format = value => Number(value).toLocaleString(undefined, {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    });
+    const timeOf = value => {
+      const match = String(value).match(/(?:T|\s)(\d{2}:\d{2})/);
+      return match ? match[1] : String(value).slice(0, 5);
+    };
+    const dateOf = value => {
+      const date = String(value).slice(0, 10);
+      const [year, month, day] = date.split('-').map(Number);
+      return Number.isFinite(year) ? new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric'
+      }).format(new Date(year, month - 1, day)) : date;
+    };
+    const dateTimeOf = value => `${dateOf(value)} · ${timeOf(value)}`;
+    const hourOf = value => {
+      const match = String(value).match(/(?:T|\s)?(\d{2}):\d{2}/);
+      return match ? Number(match[1]) : 0;
+    };
+    function refreshScenario() {
+      state.rows = state.baseRows.map(row => {
+        const demand = Number((Number(row.demand) * (1 + state.stressPct / 100)).toFixed(2));
+        const hour = hourOf(row.timestamp);
+        const storageMode = demand > 160 || (hour >= 18 && hour <= 22);
+        return {
+          ...row,
+          demand,
+          grid_mode: storageMode ? 'Renewable Storage Mode' : 'Main Grid Mode',
+          overload_alert: demand >= 200
+        };
+      });
+      const rows = state.rows;
+      if (!rows.length) return;
+      state.selectedIndex = Math.min(state.selectedIndex, rows.length - 1);
+      const peak = rows.reduce((a, b) => Number(a.demand) >= Number(b.demand) ? a : b);
+      const storage = rows.filter(row => row.grid_mode === 'Renewable Storage Mode').length;
+      const alerts = rows.filter(row => row.overload_alert).length;
+      const first = rows[0];
+      const share = Math.round(storage / rows.length * 100);
+      $('currentDemand').textContent = format(first.demand);
+      $('currentMeta').textContent = `${dateTimeOf(first.timestamp)} · window start`;
+      $('peakDemand').textContent = format(peak.demand);
+      $('peakMeta').textContent = `Expected near ${dateTimeOf(peak.timestamp)}`;
+      $('storageShare').textContent = share;
+      $('storageMeta').textContent = `${storage} of ${rows.length} hours recommended for storage`;
+      $('alertCount').textContent = alerts;
+      $('alertMeta').innerHTML = alerts ? '<strong>Critical load detected</strong> · ≥ 200 kW' : 'No critical load forecast · ≥ 200 kW';
+      $('navAlertCount').textContent = alerts;
+      $('navAlertCount').style.display = alerts ? 'inline-block' : 'none';
+      $('mixPercent').textContent = `${share}%`;
+      $('storageHours').textContent = `${storage} h`;
+      $('gridHours').textContent = `${rows.length - storage} h`;
+      $('mixDonut').style.background = `conic-gradient(var(--mint) 0 ${share}%, #24434c ${share}% 100%)`;
+      const max = Math.max(...rows.map(row => Number(row.demand)), 200);
+      $('hourStrip').style.setProperty('--hour-count', rows.length);
+      $('hourStrip').innerHTML = rows.map((row, index) => {
+        const value = Number(row.demand);
+        const modeClass = row.overload_alert ? 'risk' : row.grid_mode === 'Renewable Storage Mode' ? 'storage' : 'grid';
+        const modeLabel = row.overload_alert ? 'overload risk' : row.grid_mode === 'Renewable Storage Mode' ? 'storage recommended' : 'main grid recommended';
+        const barHeight = Math.max(12, Math.min(100, value / max * 100));
+        const tip = `${timeOf(row.timestamp)} · ${format(value)} kW · ${modeLabel}`;
+        return `<button class="hour-mark ${modeClass}${index === state.selectedIndex ? ' selected' : ''}" type="button" data-index="${index}" data-tip="${tip}" title="${tip}" aria-pressed="${index === state.selectedIndex}" aria-label="Select ${dateTimeOf(row.timestamp)}, ${format(value)} kilowatts, ${modeLabel}" style="--bar-height:${barHeight}%"><span class="hour-mark-fill"></span></button>`;
+      }).join('');
+      $('hourStripAxis').innerHTML = `<span>${timeOf(rows[0].timestamp)}</span><span>${timeOf(rows[Math.floor((rows.length - 1) / 2)].timestamp)}</span><span>${timeOf(rows[rows.length - 1].timestamp)}</span>`;
+      $('dispatchList').innerHTML = rows.slice(0, 6).map((row, index) => {
+        const value = Number(row.demand);
+        const modeClass = row.overload_alert ? 'risk' : row.grid_mode === 'Renewable Storage Mode' ? '' : 'grid';
+        const label = row.overload_alert ? 'OVERLOAD' : row.grid_mode === 'Renewable Storage Mode' ? 'STORAGE' : 'MAIN GRID';
+        const color = row.overload_alert ? 'var(--red)' : row.grid_mode === 'Renewable Storage Mode' ? 'var(--mint)' : 'var(--blue)';
+        return `<div class="dispatch-row${index === state.selectedIndex ? ' selected' : ''}" role="button" tabindex="0" data-index="${index}" aria-label="Inspect ${timeOf(row.timestamp)}, ${format(value)} kilowatts, ${label.toLowerCase()}"><span class="dispatch-time">${timeOf(row.timestamp)}</span><div><span class="dispatch-demand" style="display:block">${format(value)} kW</span><div class="dispatch-meter"><span style="width:${Math.min(100, value / max * 100)}%;background:${color}"></span></div></div><span class="mode-tag ${modeClass}">${label}</span></div>`;
+      }).join('');
+      const alertsMarkup = [];
+      if (alerts) {
+        const firstAlert = rows.find(row => row.overload_alert);
+        alertsMarkup.push(`<div class="alert-item"><span class="alert-bullet warn">!</span><span><strong>${alerts} critical overload${alerts === 1 ? '' : 's'}</strong> · first at ${timeOf(firstAlert.timestamp)} (${format(firstAlert.demand)} kW)</span></div>`);
+      } else {
+        alertsMarkup.push('<div class="alert-item"><span class="alert-bullet">✓</span><span><strong>No overload predicted</strong> · demand remains below 200 kW</span></div>');
+      }
+      alertsMarkup.push(`<div class="alert-item"><span class="alert-bullet info">↗</span><span><strong>Storage rule active</strong> · demand &gt; 160 kW or 18:00–22:00</span></div>`);
+      $('alertList').innerHTML = alertsMarkup.join('');
+      const temps = rows.map(row => Number(row.ambient_temp_c)).filter(Number.isFinite);
+      if (temps.length) {
+        const avg = temps.reduce((sum, value) => sum + value, 0) / temps.length;
+        $('weatherTemp').textContent = `${Math.round(avg)}°`;
+        $('weatherSummary').textContent = `Average input temperature · ${rows.length} h`;
+      }
+      $('dateLabel').textContent = `${dateOf(first.timestamp)} → ${dateOf(rows[rows.length - 1].timestamp)}`;
+      const metadata = state.metadata;
+      const dataLabel = metadata.filename === 'sample_test_input.csv' ? 'Starter sample telemetry' : metadata.filename ? 'Uploaded telemetry' : 'Telemetry forecast';
+      $('welcomeText').textContent = `${dataLabel} · ${rows.length} hourly rows · ${metadata.engine || 'Python prediction pipeline'}`;
+      $('fileName').textContent = metadata.filename || 'timestamp · temperature · humidity · solar';
+      $('scenarioBadge').textContent = state.stressPct ? `WHAT IF · +${state.stressPct}% LOAD` : 'BASE FORECAST';
+      $('scenarioBadge').classList.toggle('scenario-active', state.stressPct > 0);
+      $('stressValue').textContent = `+${state.stressPct}%`;
+      $('resetStress').disabled = state.stressPct === 0;
+      $('stressSlider').value = state.stressPct;
+      $('stressSlider').style.background = `linear-gradient(90deg,#ffb343 0 ${state.stressPct * 4}%,#ffffff24 ${state.stressPct * 4}% 100%)`;
+      $('timelineTitle').textContent = rows.length === 24 ? 'Scrub the next 24 hours' : `Scrub ${rows.length} forecast hours`;
+      $('timelineHint').textContent = `${rows.length} HOUR FORECAST · CLICK, DRAG OR PLAY`;
+      $('hourScrubber').max = rows.length - 1;
+      $('hourScrubber').disabled = false;
+      $('stressSlider').disabled = false;
+      $('resetStress').disabled = state.stressPct === 0;
+      $('stepBack').disabled = state.selectedIndex <= 0;
+      $('stepForward').disabled = state.selectedIndex >= rows.length - 1;
+      updateChart();
+      selectHour(state.selectedIndex, false);
+    }
+    function notify(message) {
+      $('toast').textContent = message;
+      $('toast').classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3300);
+    }
+    function setConnection(online, message) {
+      $('connectionText').textContent = message;
+      $('connectionChip').style.borderColor = online ? '#237a6c' : '#9a6336';
+      $('connectionChip').style.background = online ? '#103e3e' : '#3b2d20';
+      $('connectionChip').style.color = online ? '#a9f2df' : '#ffda9b';
+      $('connectionChip').querySelector('.status-dot').style.background = online ? 'var(--teal)' : 'var(--orange)';
+      $('offlineNote').style.display = online ? 'none' : 'block';
+    }
+    function initChart() {
+      const ctx = $('demandChart').getContext('2d');
+      const fill = ctx.createLinearGradient(0, 0, 0, 260);
+      fill.addColorStop(0, 'rgba(52,214,190,.22)');
+      fill.addColorStop(1, 'rgba(52,214,190,0)');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+           {
+            label: 'Predicted demand',
+            data: [],
+            borderColor: '#34d6be',
+            backgroundColor: fill,
+            fill: true,
+            borderWidth: 2.8,
+            tension: .36,
+            pointRadius: 2.5,
+            pointHoverRadius: 7,
+            pointBorderWidth: 1.8,
+            pointBorderColor: '#34d6be',
+            pointBackgroundColor: '#ffffff'
+          },
+           {
+            label: 'Storage threshold',
+            data: [],
+            borderColor: '#ffc04d',
+            borderWidth: 1,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          },
+           {
+            label: 'Critical limit',
+            data: [],
+            borderColor: 'rgba(255,112,94,.82)',
+            borderWidth: 1,
+            borderDash: [2, 5],
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          onClick: (event, elements) => {
+            if (elements.length) {
+              stopReplay();
+              selectHour(elements[0].index);
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: '#091e27',
+              borderColor: '#347d72',
+              borderWidth: 1,
+              titleColor: '#f4f6ed',
+              bodyColor: '#d8ece7',
+              padding: 10,
+              displayColors: false,
+              callbacks: {
+                label: item => `${item.dataset.label}: ${format(item.raw)} ${metricDefinition().unit}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              border: {
+                display: false
+              },
+              ticks: {
+                color: '#829da3',
+                font: {
+                  family: 'DM Mono',
+                  size: 9
+                },
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 8
+              }
+            },
+            y: {
+              beginAtZero: false,
+              suggestedMin: 80,
+              suggestedMax: 220,
+              grid: {
+                color: 'rgba(100,157,169,.15)',
+                drawTicks: false
+              },
+              border: {
+                display: false
+              },
+              title: {
+                display: true,
+                text: 'Demand · kW',
+                color: '#829da3',
+                font: {
+                  family: 'DM Mono',
+                  size: 9
+                }
+              },
+              ticks: {
+                color: '#829da3',
+                font: {
+                  family: 'DM Mono',
+                  size: 9
+                },
+                padding: 8,
+                callback: value=>`${value}`
+              }
+            }
+          }
+        }
+      });
+    }
+    function metricDefinition() {
+      return ({
+        demand: {
+          key: 'demand',
+          label: 'Predicted demand',
+          unit: 'kW',
+          color: '#34d6be'
+        },
+        solar: {
+          key: 'solar_irradiance_wm2',
+          label: 'Solar irradiance',
+          unit: 'W/m²',
+          color: '#ffc04d'
+        },
+        temperature: {
+          key: 'ambient_temp_c',
+          label: 'Ambient temperature',
+          unit: '°C',
+          color: '#62b9f1'
+        },
+        humidity: {
+          key: 'humidity_pct',
+          label: 'Humidity',
+          unit: '%',
+          color: '#45d6c5'
+        }
+      })[state.metric];
+    }
+    function updateChart() {
+      if (!chart || !state.rows.length) return;
+      const rows = state.rows.slice(0, state.range);
+      const labels = rows.map(row => timeOf(row.timestamp));
+      const metric = metricDefinition();
+      const values = rows.map(row => Number(row[metric.key]));
+      const displayLabel = state.metric === 'demand' && state.stressPct ? 'Scenario demand' : metric.label;
+      const bounds = state.metric === 'demand' ? [80, 220] : state.metric === 'solar' ? [0, 400] : state.metric === 'humidity' ? [0, 100] : [10, 45];
+      chart.data.labels = labels;
+      chart.data.datasets[0].label = displayLabel;
+      chart.data.datasets[0].data = values;
+      chart.data.datasets[0].borderColor = metric.color;
+      chart.data.datasets[0].backgroundColor = `${metric.color}22`;
+      chart.data.datasets[0].pointBorderColor = metric.color;
+      chart.data.datasets[0].pointBackgroundColor = values.map((value, index) => state.metric === 'demand' && value >= 200 ? '#ff705e' : index === state.selectedIndex ? '#fff2cf' : '#173640');
+      chart.data.datasets[0].pointRadius = values.map((_, index) => index === state.selectedIndex ? 5 : 2.4);
+      chart.data.datasets[1].data = state.metric === 'demand' ? values.map(() => 160) : [];
+      chart.data.datasets[2].data = state.metric === 'demand' ? values.map(() => 200) : [];
+      chart.options.scales.y.title.text = `${displayLabel} · ${metric.unit}`;
+      chart.options.scales.y.suggestedMin = bounds[0];
+      chart.options.scales.y.suggestedMax = bounds[1];
+      $('metricLegendText').textContent = `${displayLabel} · ${metric.unit}`;
+      $('metricLegendMark').className = `legend-mark ${state.metric === 'solar' ? 'sun' : state.metric === 'temperature' ? 'weather' : state.metric === 'humidity' ? 'humidity' : ''}`;
+      $('thresholdLegend').style.display = state.metric === 'demand' ? 'inline-flex' : 'none';
+      $('criticalLegend').style.display = state.metric === 'demand' ? 'inline-flex' : 'none';
+      $('chartMetricNote').textContent = state.metric === 'demand' && state.stressPct ? `Scenario includes +${state.stressPct}% simulated load` : state.metric === 'demand' ? 'Click a point to inspect its hour' : 'Dispatch rules apply to demand values';
+      chart.update();
+      $('chartSubtitle').textContent = `Hourly ${state.metric === 'demand' ? state.stressPct ? 'scenario load' : 'load' : state.metric === 'solar' ? 'solar' : state.metric === 'humidity' ? 'humidity' : 'temperature'} profile${state.metric === 'demand' && state.stressPct ? ` · +$ {
+        state.stressPct
+      }% stress` : ''} · ${rows.length} hour${rows.length === 1 ? '' : 's'} shown`;
+      $('horizonLabel').textContent = rows.length ? `${dateTimeOf(rows[0].timestamp)} → ${dateTimeOf(rows[rows.length - 1].timestamp)}` : 'Awaiting data';
+    }
+    function selectHour(index, redraw = true) {
+      if (!state.rows.length || index < 0 || index >= state.rows.length) return;
+      if (index >= state.range) {
+        state.range = 24;
+        document.querySelectorAll('[data-range]').forEach(button => button.classList.toggle('selected', Number(button.dataset.range) === 24));
+      }
+      state.selectedIndex = index;
+      const row = state.rows[index];
+      const storageMode = row.grid_mode === 'Renewable Storage Mode';
+      const solar = Number(row.solar_irradiance_wm2) || 0;
+      $('currentMode').textContent = storageMode ? 'Renewable storage' : 'Main grid';
+      $('modeCaption').textContent = `${dateTimeOf(row.timestamp)} · ${format(row.demand)} kW recommendation`;
+      $('stateOrb').textContent = storageMode ? '◈' : '⌁';
+      $('stateOrb').style.color = storageMode ? '#092e32' : '#0b2430';
+      $('stateOrb').style.background = storageMode ? 'linear-gradient(145deg,#74e6d3,#28b4a4)' : 'linear-gradient(145deg,#91d8f5,#3e8fbb)';
+      $('selectedHourTitle').textContent = `${dateTimeOf(row.timestamp)} · ${format(row.demand)} kW`;
+      const alert = row.overload_alert ? ' · critical overload' : '';
+      $('selectedHourDetail').textContent = `${storageMode ? 'Renewable storage' : 'Main grid'} recommendation${alert} · ${format(row.ambient_temp_c)}°C · ${format(row.humidity_pct)}% humidity · ${format(row.solar_irradiance_wm2)} W/m² solar`;
+      $('flowHourLabel').textContent = timeOf(row.timestamp);
+      $('flowDateLabel').textContent = dateTimeOf(row.timestamp);
+      $('flowDemand').textContent = format(row.demand);
+      $('flowDemandValue').textContent = `${format(row.demand)} kW`;
+      $('flowMode').textContent = row.overload_alert ? 'CRITICAL' : storageMode ? 'STORAGE' : 'GRID';
+      $('flowMode').classList.toggle('critical', Boolean(row.overload_alert));
+      $('flowModeLabel').textContent = row.overload_alert ? 'Overload risk · ≥ 200 kW' : storageMode ? 'Renewable storage mode' : 'Main grid mode';
+      $('flowStateDot').style.background = row.overload_alert ? '#ff705e' : storageMode ? '#34d6be' : '#62b9f1';
+      $('flowStateDot').style.boxShadow = `0 0 12px ${row.overload_alert ? '#ff705e99' : storageMode ? '#34d6be99' : '#62b9f199'}`;
+      $('flowSolar').textContent = `${Math.round(solar)} W/m²`;
+      $('flowSolarValue').textContent = `${Math.round(solar)} W/m²`;
+      $('flowTemp').textContent = `${format(row.ambient_temp_c)}°C`;
+      $('flowBatteryValue').textContent = storageMode ? 'recommended' : 'standby';
+      $('gridSourceNode').classList.toggle('recommended', !storageMode);
+      const headroom = 200 - Number(row.demand);
+      $('headroomValue').textContent = headroom > 0 ? `${format(headroom)} kW clear` : headroom === 0 ? 'AT LIMIT' : `${format(Math.abs(headroom))} kW over`;
+      $('headroomBar').style.width = `${Math.max(0, Math.min(100, Number(row.demand) / 200 * 100))}%`;
+      $('headroomBar').classList.toggle('over', row.overload_alert);
+      $('headroomNote').textContent = 'Storage rule: demand > 160 kW or 18:00–22:00.';
+      $('flowSourceValue').textContent = storageMode ? 'standby · grid' : 'recommended · primary';
+      $('solarPath').classList.toggle('active', solar > 0);
+      $('batteryPath').classList.toggle('active', storageMode);
+      $('gridPath').classList.toggle('active', !storageMode);
+      $('loadPath').classList.add('active');
+      $('hourScrubber').value = index;
+      const progress = state.rows.length > 1 ? index / (state.rows.length - 1) * 100 : 0;
+      $('hourScrubber').style.background = `linear-gradient(90deg,#34d6be 0 ${progress}%,#ffffff35 ${progress}% 100%)`;
+      $('hourScrubber').setAttribute('aria-valuetext', dateTimeOf(row.timestamp));
+      $('stressSlider').setAttribute('aria-valuetext', `Plus ${state.stressPct} percent simulated demand`);
+      $('timelineCurrent').textContent = `${dateTimeOf(row.timestamp)} · ${format(row.demand)} kW`;
+      $('stepBack').disabled = index <= 0;
+      $('stepForward').disabled = index >= state.rows.length - 1;
+      document.querySelectorAll('.dispatch-row').forEach(item => item.classList.toggle('selected', Number(item.dataset.index) === index));
+      document.querySelectorAll('.hour-mark').forEach(item => {
+        const selected = Number(item.dataset.index) === index;
+        item.classList.toggle('selected', selected);
+        item.setAttribute('aria-pressed', String(selected));
+      });
+      if (redraw) updateChart();
+    }
+    function render(rows, metadata = {}) {
+      state.baseRows = rows.map(row => ({
+        ...row
+      }));
+      state.metadata = metadata;
+      state.stressPct = 0;
+      state.selectedIndex = 0;
+      $('stressSlider').value = 0;
+      refreshScenario();
+    }
+    async function runForecast(rows = null, filename = null) {
+      stopReplay();
+      $('runBtn').disabled = true;
+      $('runBtn').innerHTML = '<span class="button-ico">◌</span>Running…';
+      try {
+        const response = await fetch('/api/forecast', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(rows ? {
+            rows: rows.slice(0, 24)
+          } : {})
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Forecast could not be completed.');
+        render(result.forecast, {
+          engine: result.engine,
+          filename: filename || result.filename
+        });
+        setConnection(true, 'Engine connected');
+        notify(`Forecast complete · ${result.forecast.length} hourly dispatch signals ready.`);
+      } catch (error) {
+        setConnection(false, 'Engine offline');
+        notify(error.message === 'Failed to fetch' ? 'Start dashboard_server.py to connect the Python forecast engine.' : error.message);
+      } finally {
+        $('runBtn').disabled = false;
+        $('runBtn').innerHTML = '<span class="button-ico">↻</span>Run forecast';
+      }
+    }
+    function stopReplay() {
+      if (state.playTimer) clearInterval(state.playTimer);
+      state.playTimer = null;
+      $('liveFlow').classList.remove('playing');
+      const button = $('playBtn');
+      if (button) {
+        button.textContent = '▶ Play';
+        button.setAttribute('aria-pressed', 'false');
+      }
+    }
+    function toggleReplay() {
+      if (state.playTimer) {
+        stopReplay();
+        return;
+      }
+      if (!state.rows.length) return notify('Run a forecast before replaying the timeline.');
+      state.range = 24;
+      document.querySelectorAll('[data-range]').forEach(button => button.classList.toggle('selected', Number(button.dataset.range) === 24));
+      selectHour(0);
+      $('playBtn').textContent = '⏸ Pause';
+      $('playBtn').setAttribute('aria-pressed', 'true');
+      state.playTimer = setInterval(() => {
+        const next = state.selectedIndex + 1;
+        if (next >= state.rows.length) {
+          stopReplay();
+          notify('Timeline replay complete.');
+          return;
+        }
+        selectHour(next);
+      }, 900);
+      $('liveFlow').classList.add('playing');
+    }
+    function parseCSV(text) {
+      const lines = text.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+      if (lines.length < 2) throw new Error('That CSV does not contain any telemetry rows.');
+      const headers = lines[0].split(',').map(value => value.trim().replace(/^"|"$/g, ''));
+      const required = ['timestamp', 'ambient_temp_c', 'humidity_pct', 'solar_irradiance_wm2'];
+      const indexes = Object.fromEntries(required.map(key => [key, headers.indexOf(key)]));
+      const missing = required.filter(key => indexes[key] < 0);
+      if (missing.length) throw new Error(`Missing CSV columns: ${missing.join(', ')}.`);
+      const rows = lines.slice(1).filter(line => line.trim()).map((line, lineIndex) => {
+        const cells = line.split(',').map(value => value.trim().replace(/^"|"$/g, ''));
+        const row = Object.fromEntries(required.map(key => [key, indexes[key] < cells.length ? cells[indexes[key]] : '']));
+        if (!row.timestamp || required.slice(1).some(key => row[key] === '' || !Number.isFinite(Number(row[key])))) throw new Error(`Invalid telemetry values on CSV row ${lineIndex + 2}.`);
+        required.slice(1).forEach(key => row[key] = Number(row[key]));
+        return row;
+      });
+      if (!rows.length) throw new Error('No valid telemetry rows were found.');
+      return rows.slice(0, 24);
+    }
+    $('runBtn').addEventListener('click', () => runForecast());
+    $('browseBtn').addEventListener('click', () => $('csvInput').click());
+    $('uploadZone').addEventListener('click', event => {
+      if (!['browseBtn', 'csvInput'].includes(event.target.id)) $('csvInput').click();
+    });
+    $('csvInput').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        const rows = parseCSV(await file.text());
+        $('fileName').textContent = `${file.name} · first ${rows.length} forecast hours`;
+        await runForecast(rows, file.name);
+      } catch (error) {
+        notify(error.message);
+      }
+      event.target.value = '';
+    });
+    ['dragenter', 'dragover'].forEach(name => $('uploadZone').addEventListener(name, event => {
+      event.preventDefault();
+      $('uploadZone').classList.add('dragover');
+    }));
+    ['dragleave', 'drop'].forEach(name => $('uploadZone').addEventListener(name, event => {
+      event.preventDefault();
+      $('uploadZone').classList.remove('dragover');
+    }));
+    $('uploadZone').addEventListener('drop', async event => {
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+      try {
+        const rows = parseCSV(await file.text());
+        $('fileName').textContent = `${file.name} · first ${rows.length} forecast hours`;
+        await runForecast(rows, file.name);
+      }
+      catch (error) {
+        notify(error.message);
+      }
+    });
+    document.querySelectorAll('[data-range]').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('[data-range]').forEach(item => item.classList.toggle('selected', item === button));
+      state.range = Number(button.dataset.range);
+      if (state.selectedIndex >= state.range) selectHour(state.range - 1);
+      else updateChart();
+    }));
+    document.querySelectorAll('[data-metric]').forEach(button => button.addEventListener('click', () => {
+      state.metric = button.dataset.metric;
+      document.querySelectorAll('[data-metric]').forEach(item => item.classList.toggle('selected', item === button));
+      updateChart();
+    }));
+    $('playBtn').addEventListener('click', toggleReplay);
+    $('hourScrubber').addEventListener('input', event => {
+      stopReplay();
+      selectHour(Number(event.target.value));
+    });
+    $('stepBack').addEventListener('click', () => {
+      stopReplay();
+      selectHour(Math.max(0, state.selectedIndex - 1));
+    });
+    $('stepForward').addEventListener('click', () => {
+      stopReplay();
+      selectHour(Math.min(state.rows.length - 1, state.selectedIndex + 1));
+    });
+    $('stressSlider').addEventListener('input', event => {
+      state.stressPct = Number(event.target.value);
+      refreshScenario();
+    });
+    $('resetStress').addEventListener('click', () => {
+      state.stressPct = 0;
+      $('stressSlider').value = 0;
+      refreshScenario();
+      notify('Stress test reset to the base forecast.');
+    });
+    const nodeDetails = {
+      solar: 'Solar irradiance is a forecast weather input in W/m². The amber route lights when the selected hour has nonzero irradiance; it is not an estimate of solar generation.',
+      battery: 'This project returns a storage recommendation, not battery charge or measured output. The teal route marks the hours when its rule selects renewable storage.',
+      utility: 'The main grid is marked primary or standby to match the selected dispatch recommendation.',
+      core: 'SpringGrid applies the project rule: storage when demand is above 160 kW or between 18:00 and 22:00; overload at 200 kW.',
+      load: 'Community load is the model-predicted demand. The scenario slider adds a clearly marked what-if increase without changing the source forecast.'
+    };
+    document.querySelectorAll('.diagram-node[data-node]').forEach(node => {
+      const inspect = () => {
+        $('nodeDetail').textContent = nodeDetails[node.dataset.node];
+      };
+      node.addEventListener('click', inspect);
+      node.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          inspect();
+        }
+      });
+    });
+    $('dispatchList').addEventListener('click', event => {
+      const row = event.target.closest('.dispatch-row');
+      if (row) {
+        stopReplay();
+        selectHour(Number(row.dataset.index));
+      }
+    });
+    $('hourStrip').addEventListener('click', event => {
+      const mark = event.target.closest('.hour-mark');
+      if (mark) {
+        stopReplay();
+        selectHour(Number(mark.dataset.index));
+      }
+    });
+    $('dispatchList').addEventListener('keydown', event => {
+      const row = event.target.closest('.dispatch-row');
+      if (row && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        stopReplay();
+        selectHour(Number(row.dataset.index));
+      }
+    });
+    const sectionDialog = $('sectionDialog');
+    const sectionDialogMount = $('sectionDialogMount');
+    const sectionPanels = {
+      forecast: {
+        id: 'forecast',
+        label: 'Forecast',
+        kicker: 'FORECAST / EXPLORE',
+        description: 'Explore the hourly curve, switch weather metrics, and inspect individual forecast hours.'
+      },
+      dispatch: {
+        id: 'dispatch',
+        label: 'Dispatch',
+        kicker: 'GRID OPERATIONS / DISPATCH',
+        description: 'Review the rule-based source recommendation and select a forecast hour to inspect it.'
+      },
+      telemetry: {
+        id: 'telemetry',
+        label: 'Telemetry',
+        kicker: 'INPUTS / WEATHER DATA',
+        description: 'Import the hourly weather CSV used by the forecast.'
+      },
+      alerts: {
+        id: 'alerts',
+        label: 'Alerts',
+        kicker: 'GRID WATCH / OPERATING SIGNALS',
+        description: 'Review overload and operating signals produced from the forecast.'
+      }
+    };
+    let focusedPanel = null;
+    const setActiveNav = panelId => document.querySelectorAll('.nav a[data-panel]').forEach(link => {
+      const active = link.dataset.panel === panelId;
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    const restoreFocusedPanel = () => {
+      if (!focusedPanel) return;
+      const {
+        element, placeholder, parent
+      } = focusedPanel;
+      if (placeholder.parentNode) placeholder.parentNode.insertBefore(element, placeholder);
+      else parent.append(element);
+      placeholder.remove();
+      focusedPanel = null;
+      sectionDialogMount.replaceChildren();
+    };
+    const openFocusedPanel = panelId => {
+      const details = sectionPanels[panelId];
+      if (!details) return;
+      if (focusedPanel?.id === details.id) return;
+      restoreFocusedPanel();
+      const element = $(details.id);
+      const placeholder = document.createComment(`Original position for ${details.id}`);
+      const parent = element.parentNode;
+      parent.insertBefore(placeholder, element);
+      focusedPanel = {
+        id: details.id,
+        element,
+        placeholder,
+        parent
+      };
+      sectionDialogMount.replaceChildren(element);
+      sectionDialog.dataset.section = panelId;
+      $('sectionDialogTitle').textContent = details.label;
+      $('sectionDialogKicker').textContent = details.kicker;
+      $('sectionDialogDescription').textContent = details.description;
+      if (!sectionDialog.open) sectionDialog.showModal();
+      requestAnimationFrame(() => {
+        if (panelId === 'forecast' && chart) chart.resize();
+      });
+    };
+    document.querySelectorAll('.nav a[data-panel]').forEach(link => link.addEventListener('click', event => {
+      event.preventDefault();
+      const panelId = link.dataset.panel;
+      setActiveNav(panelId);
+      if (panelId === 'overview') {
+        if (sectionDialog.open) sectionDialog.close();
+        $('overview').scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } else openFocusedPanel(panelId);
+    }));
+    $('sectionDialogClose').addEventListener('click', () => sectionDialog.close());
+    sectionDialog.addEventListener('click', event => {
+      if (event.target === sectionDialog) sectionDialog.close();
+    });
+    sectionDialog.addEventListener('close', () => {
+      restoreFocusedPanel();
+      sectionDialog.removeAttribute('data-section');
+      setActiveNav('overview');
+      document.querySelector('.nav a[data-panel="overview"]')?.focus();
+    });
+    $('downloadBtn').addEventListener('click', () => {
+      if (!state.rows.length) return notify('Run a forecast before downloading results.');
+      const header = 'timestamp,base_demand_kw,scenario_demand_kw,grid_mode,overload_alert,stress_test_pct';
+      const lines = state.rows.map((row, index) => [row.timestamp, state.baseRows[index].demand, row.demand, row.grid_mode, row.overload_alert, state.stressPct].join(','));
+      const blob = new Blob([[header, ...lines].join('\n')], {
+        type: 'text/csv'
+      });
+      const link = document.createElement('a');
+      const objectUrl = URL.createObjectURL(blob);
+      link.href = objectUrl;
+      link.download = 'springgrid_forecast.csv';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      notify('Forecast CSV downloaded.');
+    });
+    initChart();
+    fetch('/api/health').then(response => response.json()).then(() => {
+      setConnection(true, 'Engine connected');
+      runForecast();
+    }).catch(() => setConnection(false, 'Engine offline'));
+  </script>
+</body>
+</html>
